@@ -274,7 +274,7 @@ body.anfield .stat.phd b { color: #e0182f }
       <div class="af-stage" id="afStage">
         <canvas id="afCanvas" aria-label="Network of Liverpool's greatest players and managers"></canvas>
         <div class="af-tip" id="afTip" hidden></div>
-        <div class="af-legend"><span><i style="background:#ff4d5e"></i>Top 100 player</span><span><i style="background:#00b2a9"></i>Manager</span><span><i style="background:#ffffff"></i>Player and manager</span></div>
+        <div class="af-legend"><span><i style="background:#ff4d5e"></i>Top 100 player</span><span><i style="background:#00b2a9"></i>Manager</span><span><i style="background:#ffffff"></i>Player and manager</span><span><i style="background:#ffa3b0"></i>Future all-timer</span></div>
       </div>
       <aside class="af-side">
         <h2>Managers</h2>
@@ -794,12 +794,18 @@ body.anfield .stat.phd b { color: #e0182f }
 
   const nodes = RANKED.map(([name, a, b], i) => ({ name, rank: i + 1, pa: a, pb: b, ma: null, mb: null }));
   const byName = new Map(nodes.map(n => [n.name, n]));
+  // Current squad (ESPN 2026-27 squad page): Top 100 players still at the club play on under Iraola.
+  const CURRENT = ['Virgil van Dijk', 'Alisson Becker', 'Joe Gomez', 'Dominik Szoboszlai', 'Alexis Mac Allister'];
+  CURRENT.forEach(name => { const n = byName.get(name); if (n) { n.pb = 2027; n.cur = true; } });
+  // Chris's picks: future all-timers (current squad, not yet in the Top 100)
+  const FUTURE = [['Florian Wirtz', 2025], ['Jérémy Jacquet', 2026], ['Rio Ngumoha', 2025]];
+  FUTURE.forEach(([name, a]) => { const n = { name, rank: null, pa: a, pb: 2027, ma: null, mb: null, cur: true, future: true }; nodes.push(n); byName.set(name, n); });
   for (const [name, a, b, cur] of MANAGERS) {
     const n = byName.get(name);
     if (n) { n.ma = a; n.mb = b; n.mcur = !!cur; } else { const m = { name, rank: null, pa: null, pb: null, ma: a, mb: b, mcur: !!cur }; nodes.push(m); byName.set(name, m); }
   }
   nodes.forEach(n => { n.a = Math.min(...[n.pa, n.ma].filter(v => v != null)); n.b = Math.max(...[n.pb, n.mb].filter(v => v != null));
-    n.kind = n.rank && n.ma ? 'both' : n.rank ? 'player' : 'manager'; });
+    n.kind = n.future ? 'future' : n.rank && n.ma ? 'both' : n.rank ? 'player' : 'manager'; });
   const ov = (a1, b1, a2, b2) => (a1 == null || a2 == null) ? 0 : Math.min(b1, b2) - Math.max(a1, a2);
   const links = [];
   for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
@@ -830,8 +836,9 @@ body.anfield .stat.phd b { color: #e0182f }
   let W = 0, H = 0, dpr = 1, year = 2026, hover = null, focus = null, timer = null, built = false;
   const sx = n => W / 2 + n.x * (W / 2 - 60), sy = n => H / 2 + 6 + n.y * (H / 2 - 44);
   const vis = n => n.a <= year;
-  const rad = n => n.kind !== 'player' ? 9 : 3 + (101 - n.rank) / 100 * 7;
-  const col = n => n.kind === 'manager' ? GREEN : n.kind === 'both' ? WHITE : n.rank <= 25 ? RED : DEEP;
+  const FUT = '#ffa3b0';
+  const rad = n => n.kind === 'future' ? 6.5 : n.kind !== 'player' ? 9 : 3 + (101 - n.rank) / 100 * 7;
+  const col = n => n.kind === 'future' ? FUT : n.kind === 'manager' ? GREEN : n.kind === 'both' ? WHITE : n.rank <= 25 ? RED : DEEP;
   function resize() { W = stage.clientWidth; H = Math.max(420, Math.min(innerHeight * 0.75, W * 0.8)); dpr = devicePixelRatio || 1;
     cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px'; draw(); }
   function draw() {
@@ -853,7 +860,7 @@ body.anfield .stat.phd b { color: #e0182f }
       if (n.kind !== 'player') { ctx.beginPath(); ctx.arc(sx(n), sy(n), rad(n) + 3, 0, 7); ctx.strokeStyle = col(n); ctx.lineWidth = 1.2; ctx.stroke(); } }
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (const n of nodes) { if (!vis(n)) continue;
-      const show = act ? nb.has(n) : (n.kind !== 'player' || n.rank <= 20);
+      const show = act ? nb.has(n) : (n.kind !== 'player' || n.rank <= 20 || n.cur);
       if (!show) continue; const big = n.kind !== 'player' || n.rank <= 10;
       ctx.globalAlpha = 1; ctx.font = `${big ? 700 : 500} ${big ? 12 : 10.5}px "Libre Franklin", system-ui, sans-serif`;
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(40,4,12,0.85)'; const y0 = sy(n) + rad(n) + 4;
@@ -862,11 +869,12 @@ body.anfield .stat.phd b { color: #e0182f }
   }
   function pick(ev) { const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = 12;
     for (const n of nodes) { if (!vis(n)) continue; const d = Math.hypot(sx(n) - x, sy(n) - y) - rad(n); if (d < bd) { bd = d; best = n; } } return { n: best, x, y }; }
-  const yrs = (a, b) => a == null ? '' : `${a}–${b >= 2026 ? 'present' : b}`;
+  const pyrs = n => n.pa == null ? '' : n.cur ? `${n.pa}–present` : `${n.pa}–${n.pb}`;
   const myrs = n => n.mcur ? `${n.ma}–present` : `${n.ma}–${n.mb}`;
   function showTip({ n, x, y }) { if (!n) { tip.hidden = true; return; }
     const lines = [];
-    if (n.rank) lines.push(`No. ${n.rank} in the Top 100 · player ${yrs(n.pa, n.pb)}`);
+    if (n.rank) lines.push(`No. ${n.rank} in the Top 100 · player ${pyrs(n)}`);
+    if (n.future) lines.push(`Future all-timer · at Liverpool ${pyrs(n)}`);
     if (n.ma) lines.push(`Manager ${myrs(n)}`);
     lines.push(`${n.nb.length} connections`);
     tip.innerHTML = ''; const b = document.createElement('b'); b.textContent = n.name; tip.appendChild(b);
@@ -897,7 +905,10 @@ body.anfield .stat.phd b { color: #e0182f }
     const top = document.getElementById('afTop');
     nodes.filter(n => n.rank).sort((a, b) => a.rank - b.rank).forEach(n => { const li = document.createElement('li');
       li.innerHTML = '<span class="rk"></span><span class="nm"></span><span class="yrs"></span>';
-      li.children[0].textContent = n.rank; li.children[1].textContent = n.name; li.children[2].textContent = yrs(n.pa, n.pb); top.appendChild(li); });
+      li.children[0].textContent = n.rank; li.children[1].textContent = n.name; li.children[2].textContent = pyrs(n); top.appendChild(li); });
+    const fut = document.createElement('p'); fut.style.marginTop = '6px';
+    fut.textContent = 'Future all-timers: ' + nodes.filter(n => n.future).map(n => n.name).join(', ') + '.';
+    top.after(fut);
     new ResizeObserver(resize).observe(stage);
   }
   document.addEventListener('anfield', e => { if (e.detail) { build(); requestAnimationFrame(resize); } else { stop(); focus = hover = null; } });
