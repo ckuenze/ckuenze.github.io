@@ -1,0 +1,21 @@
+{
+  "_note": "From the CV's POPULAR MEDIA section. Newest first. type: podcast | news | article | video.",
+  "items": [
+    { "date": "2026-10-20", "type": "podcast", "title": "Clinical thresholds for quad strength after ACLR", "outlet": "The E3 Rehab Podcast, Episode 275", "with": "Hosted by C. Hughen",
+      "links": [ { "label": "Listen", "url": "https://podcasts.apple.com/us/podcast/275-clinical-thresholds-for-quad-strength-after-aclr/id1484112288?i=1000797233216" }, { "label": "Watch", "url": "https://www.youtube.com/watch?v=w6CU5fOJAso" } ] },
+    { "date": "2026-06-26", "type": "podcast", "title": "ARROW Study Group", "outlet": "Pediatric Sports Lab: A PRiSM Podcast", "with": "With Shelby Baez · hosted by E. Post",
+      "links": [ { "label": "Listen", "url": "https://podcasts.apple.com/us/podcast/arrow-study-group/id1781826641" } ] },
+    { "date": "2026-06-10", "type": "news", "title": "Q&A: Why are ACL injuries so common in soccer?", "outlet": "UVA Today", "with": "",
+      "links": [ { "label": "Read", "url": "https://news.virginia.edu/content/qa-why-are-acl-injuries-so-common-soccer" } ] },
+    { "date": "2025-12-01", "when": "Winter 2025", "type": "article", "title": "Return to play after ACL reconstruction: integrating key metrics", "outlet": "Sports Medicine Update (AOSSM), Winter 2025", "with": "Chang, Eliasberg, Lian, and Kuenze",
+      "links": [ { "label": "Read", "url": "https://www.sportsmed.org/membership/sports-medicine-update/winter-2025/return-to-play-after-acl-integrating-key-metrics" } ] },
+    { "date": "2025-09-26", "type": "news", "title": "UVA study hopes to heal confidence along with torn ligaments", "outlet": "UVA Today", "with": "",
+      "links": [ { "label": "Read", "url": "https://news.virginia.edu/content/uva-study-hopes-heal-confidence-along-torn-ligaments" } ] },
+    { "date": "2025-09-26", "type": "podcast", "title": "Are you sure I'm ready? Anxiety and ACL surgery recovery", "outlet": "EdLab Podcast, UVA School of Education and Human Development", "with": "",
+      "links": [ { "label": "Listen", "url": "https://education.virginia.edu/news-stories/edlab-podcast-are-you-sure-im-ready-anxiety-and-acl-surgery-recovery" } ] },
+    { "date": "2024-02-16", "type": "news", "title": "Researchers work to reduce, delay arthritis after ACL reconstruction", "outlet": "UVA Today", "with": "",
+      "links": [ { "label": "Read", "url": "https://news.virginia.edu/content/researchers-work-reduce-delay-arthritis-after-acl-reconstruction" } ] },
+    { "date": "2023-02-27", "type": "podcast", "title": "Raising the bar in ACL rehabilitation", "outlet": "JOSPT Insights, Episode 121", "with": "With Adam Weaver",
+      "links": [ { "label": "Spotify", "url": "https://open.spotify.com/episode/0p8177sh7cI6awuPiYTH8u" }, { "label": "Apple Podcasts", "url": "https://podcasts.apple.com/us/podcast/jospt-insights/id1522929437" }, { "label": "PRiSM post", "url": "https://www.instagram.com/p/Cusz9Yns8jc/" } ] }
+  ]
+}

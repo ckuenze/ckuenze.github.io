@@ -1,0 +1,38 @@
+{
+  "_note": "Hand-curated 'Recent work' cards for the home page. Summaries are written from each paper's abstract (PubMed) and approved by Chris. 'stat' values must come from the abstract. Newest first; the page shows the first 4.",
+  "items": [
+    {
+      "n": 136,
+      "label": "ARROW registry",
+      "summary": "In 1,549 adolescents from the ARROW registry, average time to return-to-sport clearance rose from 8.6 months for surgeries in 2015 to 9.8 months in 2023, after accounting for age, sex, graft, and site.",
+      "stat": { "value": "8.6 → 9.8", "caption": "months to clearance, 2015 vs 2023" },
+      "visual": "line",
+      "points": [[2015, 8.59], [2020, 9.28], [2021, 9.50], [2023, 9.77]],
+      "facts": [ ["1,549", "adolescents, surgeries from 2015 to 2023"], ["+0.4", "months longer for females than males"] ]
+    },
+    {
+      "n": 135,
+      "label": "Psychological readiness",
+      "summary": "In 58 patients about 6 months after ACL reconstruction, fear of movement, anxiety, and how patients rated their own knee explained readiness to return to sport far better than strength or hop symmetry did.",
+      "stat": { "value": "70%", "caption": "of the variation in readiness explained by the full model" },
+      "visual": "bar", "bar": [70],
+      "facts": [ ["22%", "explained by fear of movement (kinesiophobia)"], ["18%", "explained by general anxiety"], ["10%", "explained by knee-related quality of life"] ]
+    },
+    {
+      "n": 130,
+      "label": "Physical activity",
+      "summary": "Among 125 adolescents, the share who felt as active as before injury doubled from 6 to 9 months after surgery. Even so, half still felt less active or found activity harder at 9 months.",
+      "stat": { "value": "25% → 51%", "caption": "as active as before injury, 6 vs 9 months" },
+      "visual": "bars", "bar": [24.8, 51.2], "barLabels": ["6 mo", "9 mo"],
+      "facts": [ ["50%", "still less active or finding activity harder at 9 months"], ["125", "adolescents, average age 16"] ]
+    },
+    {
+      "n": 127,
+      "label": "Reinjury risk",
+      "summary": "In 579 patients followed for at least 2 years, 14% had a second ACL injury. A steeper quadriceps torque-velocity relationship and younger age both predicted who got hurt again.",
+      "stat": { "value": "14%", "caption": "had a second ACL injury (81 of 579)" },
+      "visual": "facts",
+      "facts": [ ["3.5×", "odds of reinjury with a steeper torque-velocity slope"], ["6%", "lower odds for each year older"] ]
+    }
+  ]
+}
