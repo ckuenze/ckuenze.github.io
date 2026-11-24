@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font-size:14px}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Kuenze Co-author Network</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the network canvas with a slim control bar above and a cohort panel beside it (stacks on phones).
+   Theme: follows the viewer's light/dark setting with the same colors and type as chriskuenze.com. */
+:root {
+  --bg: #ffffff; --panel: #f3f5f9; --line: #dde2ec; --fg: #1d2333; --muted: #5a6478;
+  --btn: #ffffff; --btnh: #b9c3d6; --soft: #ffffff; --chipon: #e4e9f3; --chiponline: #9fb0d3; --track: #e4e9f3;
+  --factfg: #3d4658; --tipbg: rgba(255, 255, 255, 0.97); --tipline: #cfd6e4; --zoombg: rgba(255, 255, 255, 0.92);
+  --stage0: #ffffff; --stage1: #f6f8fb; --ontint: #ffffff; --shadow: rgba(29, 35, 51, 0.12);
+  --me: #232d4b; --phd: #e57200; --trainee: #d6457a; --early: #4fb3e8; --late: #232d4b;
+  --display: "Libre Franklin", "Franklin Gothic Medium", "Segoe UI", system-ui, sans-serif; --body: "Libre Franklin", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11172a; --panel: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2;
+  --btn: #1f2947; --btnh: #3a4a76; --soft: #1d2644; --chipon: #2a3760; --chiponline: #5a6da8; --track: #26314f;
+  --factfg: #c3cbe0; --tipbg: rgba(13, 19, 38, 0.94); --tipline: #3a4a76; --zoombg: rgba(18, 26, 49, 0.85);
+  --stage0: #11172a; --stage1: #1a2446; --ontint: #1a1205; --shadow: rgba(0, 0, 0, 0.4);
+  --me: #ffffff; --phd: #ff8f2e; --trainee: #ff6f91; --early: #4cc3f5; --late: #8b7bff; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11172a; --panel: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2;
+  --btn: #1f2947; --btnh: #3a4a76; --soft: #1d2644; --chipon: #2a3760; --chiponline: #5a6da8; --track: #26314f;
+  --factfg: #c3cbe0; --tipbg: rgba(13, 19, 38, 0.94); --tipline: #3a4a76; --zoombg: rgba(18, 26, 49, 0.85);
+  --stage0: #11172a; --stage1: #1a2446; --ontint: #1a1205; --shadow: rgba(0, 0, 0, 0.4);
+  --me: #ffffff; --phd: #ff8f2e; --trainee: #ff6f91; --early: #4cc3f5; --late: #8b7bff; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 20px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px }
+.wrap > *, header > div { min-width: 0 }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px }
+h1 { font-family: var(--display); font-size: clamp(1.4rem, 3vw, 2rem); margin: 0; letter-spacing: -0.01em; text-wrap: balance }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 70ch; line-height: 1.45 }
+.stats { display: flex; gap: 18px; flex-wrap: wrap }
+.stat { min-width: 84px }
+.stat b { display: block; font-family: var(--display); font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1 }
+.stat span { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted) }
+.stat.phd b { color: var(--phd) }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px }
+.controls label { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 8px }
+button, select { font: inherit; color: var(--fg); background: var(--btn); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer }
+button:hover, select:hover { border-color: var(--btnh) }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--phd); outline-offset: 2px }
+#play { background: var(--phd); color: var(--ontint); border-color: var(--phd); font-weight: 600; min-width: 92px }
+.yearbox { display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-width: 0 }
+#year { flex: 1; accent-color: var(--phd); min-width: 0 }
+#yearLabel { font-family: var(--mono); font-size: 1.1rem; color: var(--phd); min-width: 3.2em; text-align: right }
+.chips { display: flex; gap: 6px; flex-wrap: wrap }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; padding: 5px 10px; border-radius: 999px }
+.chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block }
+.chip[aria-pressed="true"] { background: var(--chipon); border-color: var(--chiponline) }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 14px }
+@media (max-width: 860px) { .main { grid-template-columns: 1fr } }
+.stage { position: relative; background: radial-gradient(ellipse at 50% 45%, var(--stage1) 0%, var(--stage0) 70%); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0 }
+canvas { display: block; width: 100%; touch-action: none; user-select: none }
+@media (max-width: 640px) { .hint { display: none } }
+.muted { color: var(--muted) }
+.insights { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; min-width: 0 }
+.ins-head h2 { font-family: var(--display); font-size: 1.15rem; margin: 0 }
+.ins-head h2 span { font-family: var(--mono); font-size: 0.85rem; font-weight: 400 }
+.ins-head p { margin: 4px 0 0; font-size: 0.78rem }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px }
+.fact { background: var(--soft); border-radius: 12px; padding: 12px; display: grid; gap: 4px; align-content: start; min-width: 0 }
+.fact b { font-family: var(--display); font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1.1; color: var(--fact, var(--fg)) }
+.fact span { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted) }
+.fact small { font-size: 0.76rem; color: var(--factfg); line-height: 1.4; overflow-wrap: anywhere }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px }
+.tabs button { font-size: 0.8rem; padding: 6px 11px; border-radius: 999px }
+.tabs button[aria-selected="true"] { background: var(--phd); border-color: var(--phd); color: var(--ontint); font-weight: 600 }
+.board-desc { margin: 0; font-size: 0.78rem }
+.board { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
+.board li button { width: 100%; display: grid; grid-template-columns: 2em minmax(0, 11em) minmax(60px, 1fr) auto; gap: 10px; align-items: center; text-align: left; background: transparent; border: 1px solid transparent; padding: 6px 8px }
+.board li button:hover { background: var(--soft); border-color: var(--line) }
+.board .rk { font-family: var(--mono); color: var(--muted); font-size: 0.8rem }
+.board .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.board .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.board .bar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden }
+.board .bar i { display: block; height: 100%; border-radius: 4px }
+.board .vl { font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: right }
+@media (max-width: 560px) { .board li button { grid-template-columns: 1.6em minmax(0, 1fr) auto } .board .bar { display: none } }
+.swatches, .savegroup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px }
+.savegroup { margin-left: auto }
+input[type="color"] { width: 28px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer }
+input[type="checkbox"] { accent-color: var(--phd); width: 16px; height: 16px }
+#savePng { background: var(--btn); border-color: var(--phd); color: var(--phd); font-weight: 600 }
+#savePng:disabled { opacity: 0.45; cursor: not-allowed }
+.note { font-size: 0.75rem; color: var(--muted); max-width: 32ch }
+
+.stage[data-bg="none"] { background: repeating-conic-gradient(#d9dde5 0 25%, #ffffff 0 50%) 0 0 / 18px 18px }
+.stage[data-bg="white"] .legend, .stage[data-bg="light"] .legend, .stage[data-bg="none"] .legend,
+.stage[data-bg="white"] .hint, .stage[data-bg="light"] .hint, .stage[data-bg="none"] .hint { color: #52606d }
+.zoom { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px; background: var(--zoombg); border: 1px solid var(--line); border-radius: 10px; padding: 4px }
+.zoom button { width: 32px; height: 32px; padding: 0; font-size: 1.05rem; line-height: 1 }
+.zoom span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); min-width: 3.4em; text-align: center }
+.tip { position: absolute; pointer-events: none; background: var(--tipbg); border: 1px solid var(--tipline); border-radius: 10px; padding: 10px 12px; font-size: 0.8rem; line-height: 1.45; max-width: 250px; box-shadow: 0 8px 24px var(--shadow) }
+.tip h3 { margin: 0 0 2px; font-family: var(--display); font-size: 0.95rem }
+.tip .role { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase }
+.tip .k { color: var(--muted) }
+.legend { position: absolute; left: 12px; bottom: 10px; font-size: 0.72rem; color: var(--muted); display: grid; gap: 6px }
+.ramp { width: 150px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--early), var(--late)) }
+.ramprow { display: flex; justify-content: space-between; width: 150px; font-family: var(--mono) }
+.hint { position: absolute; right: 12px; bottom: 10px; font-size: 0.72rem; color: var(--muted) }
+aside { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0 }
+aside h2 { font-family: var(--display); font-size: 1rem; margin: 0 }
+aside p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.45 }
+.cohort { display: grid; gap: 6px }
+.stu { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; padding: 8px 10px; background: var(--soft); border-radius: 10px; border: 1px solid transparent }
+.stu:hover, .stu[aria-pressed="true"] { border-color: var(--phd) }
+.stu b { font-weight: 600 }
+.stu em { font-style: normal; font-family: var(--mono); color: var(--phd); font-size: 0.85rem }
+.stu small { color: var(--muted); grid-column: 1 / -1; font-size: 0.72rem }
+.stu.dim { opacity: 0.35 }
+.foot { color: var(--muted); font-size: 0.72rem; line-height: 1.5 }
+body.anfield .stat b { color: #e0182f }
+body.anfield h1 { color: #e0182f }
+body.anfield .stat.phd b { color: #e0182f }
+/* Anfield view: its own fixed red look in both themes */
+#anfieldView { display: grid; gap: 14px }
+#anfieldView[hidden] { display: none }
+.af-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; background: #2a0710; border: 1px solid #5a1222; border-radius: 12px; padding: 10px 14px; color: #f3dfe2 }
+.af-bar button { background: #c8102e; color: #fff; border-color: #c8102e; font-weight: 600 }
+.af-bar button.ghost { background: transparent; color: #f3dfe2; border-color: #7a2234 }
+.af-bar label { font-size: 0.78rem; color: #e3b8c0; display: flex; gap: 8px; align-items: center }
+.af-bar input[type="range"] { accent-color: #c8102e; flex: 1; min-width: 0 }
+.af-bar .yr { font-family: var(--mono); color: #ff6b7d; min-width: 3.2em; text-align: right }
+.af-main { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 14px }
+@media (max-width: 860px) { .af-main { grid-template-columns: 1fr } }
+.af-stage { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid #5a1222; background: #3a0510; min-width: 0 }
+.af-stage canvas { display: block; width: 100% }
+.af-tip { position: absolute; pointer-events: none; background: rgba(30, 4, 10, 0.95); color: #fff; border: 1px solid #7a2234; border-radius: 10px; padding: 9px 12px; font-size: 0.8rem; line-height: 1.45; max-width: 240px }
+.af-tip b { display: block; font-size: 0.95rem }
+.af-tip span { color: #e3b8c0 }
+.af-legend { position: absolute; left: 12px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.72rem; color: #f3dfe2 }
+.af-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px }
+.af-side, .af-honours { background: #2a0710; border: 1px solid #5a1222; border-radius: 14px; padding: 14px; color: #f3dfe2; display: grid; gap: 8px; align-content: start; min-width: 0 }
+.af-side h2, .af-honours h2 { font-family: var(--display); font-size: 1rem; margin: 0; color: #fff }
+.af-side p, .af-honours p { margin: 0; font-size: 0.78rem; color: #e3b8c0; line-height: 1.45 }
+.af-mgr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; background: #3a0b16; color: #fff; border: 1px solid transparent; border-radius: 10px; padding: 7px 10px }
+.af-mgr:hover, .af-mgr[aria-pressed="true"] { border-color: #00b2a9 }
+.af-mgr em { font-style: normal; font-family: var(--mono); color: #4fd6cc; font-size: 0.8rem }
+.af-honours .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
+.af-honours .h { background: #3a0b16; border-radius: 12px; padding: 12px; display: grid; gap: 2px }
+.af-honours .h b { font-family: var(--display); font-size: 1.6rem; color: #ff4d5e; line-height: 1.1 }
+.af-honours .h span { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: #e3b8c0 }
+.af-top { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 4px 16px; font-size: 0.86rem }
+.af-top li { display: grid; grid-template-columns: 2em minmax(0, 1fr) auto; gap: 8px; padding: 4px 0; border-bottom: 1px solid #4a0d1a }
+.af-top .rk { font-family: var(--mono); color: #ff6b7d }
+.af-top .yrs { font-family: var(--mono); color: #c99aa3; font-size: 0.74rem }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+.sitelink{color:var(--muted);font-size:.8rem;text-decoration:none}.sitelink:hover{color:var(--fg)}</style>
+
+<div class="wrap"><a class="sitelink" href="../">&larr; chriskuenze.com</a>
+  <header>
+    <div>
+      <h1>Christopher Kuenze · Co-author Network</h1>
+      <p class="sub">Every published manuscript on the CV, 2008 to today. Press play to watch the network grow, hover a name to see who that person has written with, and scroll or pinch to zoom (drag to pan).</p>
+    </div>
+    <div class="stats" aria-live="polite">
+      <div class="stat"><b id="sPapers">0</b><span>Papers</span></div>
+      <div class="stat"><b id="sAuthors">0</b><span>Co-authors</span></div>
+      <div class="stat phd"><b id="sPhd">0</b><span>Doctoral students</span></div>
+      <div class="stat"><b id="sTies">0</b><span>Co-author ties</span></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button id="play" type="button">▶ Play</button>
+    <div class="yearbox"><label for="year">Through</label><input id="year" type="range" min="2008" max="2026" step="1" value="2026"><span id="yearLabel">2026</span></div>
+    <label for="minp">Min. papers with Chris
+      <select id="minp"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option></select>
+    </label>
+    <div class="chips" role="group" aria-label="Spotlight">
+      <button class="chip" id="cPhd" type="button" aria-pressed="false"><i style="background:var(--phd)"></i>Doctoral students</button>
+      <button class="chip" id="cTr" type="button" aria-pressed="false"><i style="background:var(--trainee)"></i>Other trainees</button>
+    </div>
+  </div>
+
+  <div class="controls export" role="group" aria-label="Colors and image">
+    <label for="preset">Colors
+      <select id="preset">
+        <option value="site" selected>Match site (light/dark)</option>
+        <option value="constellation">Constellation</option>
+        <option value="classic">Classic green</option>
+        <option value="uvablue">UVA Blue (secondary colors)</option>
+        <option value="uva">UVA navy and orange</option>
+        <option value="print">Print (gray and gold)</option>
+        <option value="custom" hidden>Custom</option>
+      </select>
+    </label>
+    <label for="bg">Background
+      <select id="bg">
+        <option value="sitelight">Site light</option>
+        <option value="sitedark">Site dark</option>
+        <option value="night">Night sky</option>
+        <option value="uvablue">UVA Blue</option>
+        <option value="navy">Navy</option>
+        <option value="white">White</option>
+        <option value="light">Light gray</option>
+        <option value="none">Transparent</option>
+      </select>
+    </label>
+    <div class="swatches">
+      <label for="col-phd"><input type="color" id="col-phd" value="#ffb547">Doctoral</label>
+      <label for="col-trainee"><input type="color" id="col-trainee" value="#ff6f91">Trainees</label>
+      <label for="col-early"><input type="color" id="col-early" value="#2dd4bf">Earliest</label>
+      <label for="col-late"><input type="color" id="col-late" value="#8b7bff">Latest</label>
+    </div>
+    <div class="savegroup">
+      <label for="withLegend"><input type="checkbox" id="withLegend" checked>Title and legend</label>
+      <label for="scale">Size
+        <select id="scale"><option value="2">2×</option><option value="3" selected>3×</option><option value="4">4×</option></select>
+      </label>
+      <button id="savePng" type="button">Save PNG</button>
+      <span id="saveNote" class="note" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="Co-author network graph"></canvas>
+      <div class="tip" id="tip" hidden></div>
+      <div class="legend">
+        <div>Collaborators, by first paper with Chris</div>
+        <div class="ramp"></div>
+        <div class="ramprow"><span>2008</span><span>2026</span></div>
+      </div>
+      <div class="hint">Size = papers with Chris · Line = papers shared</div>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button id="zIn" type="button" aria-label="Zoom in">+</button>
+        <button id="zOut" type="button" aria-label="Zoom out">−</button>
+        <button id="zReset" type="button" aria-label="Reset zoom">⟲</button>
+        <span id="zoomLevel">100%</span>
+      </div>
+    </div>
+    <aside>
+      <h2>Doctoral students advised</h2>
+      <p>Click a name to light up that student's part of the network.</p>
+      <div class="cohort" id="cohort"></div>
+      <p class="foot">Built from the Published Manuscripts section of the November 2026 CV (136 papers). Group authorships (ARROW, ATOAC) count only named authors. Students without a published paper yet (Gabriella Nazari, Kathryn Southall) don't appear in the graph. Names are matched on surname and first initial.</p>
+    </aside>
+  </div>
+
+  <section class="insights" aria-labelledby="insH">
+    <div class="ins-head">
+      <h2 id="insH">Insights <span id="insYear" class="muted"></span></h2>
+      <p class="muted" id="insNote"></p>
+    </div>
+    <div class="facts" id="facts"></div>
+    <div class="boards">
+      <div class="tabs" role="tablist" aria-label="Leaderboards" id="tabs"></div>
+      <p class="muted board-desc" id="boardDesc"></p>
+      <ol class="board" id="board"></ol>
+    </div>
+  </section>
+
+  <section id="anfieldView" hidden aria-label="Anfield mode">
+    <div class="af-bar">
+      <button id="afPlay" type="button">▶ Play history</button>
+      <label for="afYear" style="flex:1 1 240px">Through <input id="afYear" type="range" min="1896" max="2026" value="2026"></label>
+      <span class="yr" id="afYearLabel">2026</span>
+      <button id="afExit" type="button" class="ghost">Back to the research</button>
+    </div>
+    <div class="af-main">
+      <div class="af-stage" id="afStage">
+        <canvas id="afCanvas" aria-label="Network of Liverpool's greatest players and managers"></canvas>
+        <div class="af-tip" id="afTip" hidden></div>
+        <div class="af-legend"><span><i style="background:#ff4d5e"></i>Top 100 player</span><span><i style="background:#00b2a9"></i>Manager</span><span><i style="background:#ffffff"></i>Player and manager</span></div>
+      </div>
+      <aside class="af-side">
+        <h2>Managers</h2>
+        <p>Click a manager to light up the players who played under them.</p>
+        <div id="afManagers" style="display:grid;gap:6px"></div>
+      </aside>
+    </div>
+    <section class="af-honours">
+      <h2>Major honours</h2>
+      <div class="grid" id="afHonours"></div>
+      <h2 style="margin-top:8px">The Top 100, as voted in 2026</h2>
+      <ol class="af-top" id="afTop"></ol>
+      <p>Ranking from liverpoolfc.com, "Liverpool's Greatest: The results." Honours from liverpoolfc.com/history/honours. Years at the club are approximate.</p>
+    </section>
+  </section>
+</div>
+
+<script>
+(async function () {
+  // ---- colors and backgrounds (live view and PNG use the same settings) ----
+  const PRESETS = {
+    constellation: { phd: '#ffb547', trainee: '#ff6f91', early: '#2dd4bf', late: '#8b7bff', bg: 'night' },
+    classic:       { phd: '#f0a020', trainee: '#e8506f', early: '#1f9e6e', late: '#1f9e6e', bg: 'white' },
+    // UVA Blue ground; UVA Orange for doctoral students; UVA secondary Magenta, Green and Cyan (brand.virginia.edu)
+    uvablue:       { phd: '#e57200', trainee: '#ef3f6b', early: '#62bb46', late: '#009fdf', bg: 'uvablue' },
+    uva:           { phd: '#e57200', trainee: '#d6457a', early: '#4fb3e8', late: '#232d4b', bg: 'white' },
+    print:         { phd: '#d99000', trainee: '#9b4d6b', early: '#b8bec9', late: '#3f4756', bg: 'white' },
+  };
+  const BGS = {
+    night: { dark: true, paint: (g, w, h) => { const gr = g.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.max(w, h) * 0.7); gr.addColorStop(0, '#16224a'); gr.addColorStop(1, '#0b1020'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } },
+    uvablue: { dark: true, paint: (g, w, h) => { g.fillStyle = '#232d4b'; g.fillRect(0, 0, w, h); } },
+    navy:  { dark: true, paint: (g, w, h) => { g.fillStyle = '#1b2547'; g.fillRect(0, 0, w, h); } },
+    white: { dark: false, paint: (g, w, h) => { g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h); } },
+    light: { dark: false, paint: (g, w, h) => { g.fillStyle = '#eef1f6'; g.fillRect(0, 0, w, h); } },
+    none:  { dark: false, paint: null },
+  };
+  BGS.sitelight = { dark: false, paint: (g, w, h) => { const gr = g.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.max(w, h) * 0.7); gr.addColorStop(0, '#f6f8fb'); gr.addColorStop(1, '#ffffff'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } };
+  BGS.anfield = { dark: true, paint: (g, w, h) => { const gr = g.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.max(w, h) * 0.7); gr.addColorStop(0, '#a10d24'); gr.addColorStop(1, '#3a0510'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } };
+  BGS.sitedark = { dark: true, paint: (g, w, h) => { const gr = g.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, Math.max(w, h) * 0.7); gr.addColorStop(0, '#1a2446'); gr.addColorStop(1, '#11172a'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } };
+  // "Match site": chriskuenze.com colors, switching with the viewer's light/dark setting
+  const darkMQ = matchMedia('(prefers-color-scheme: dark)');
+  const siteDark = () => { const t = document.documentElement.dataset.theme; return t ? t === 'dark' : darkMQ.matches; };
+  const SITE = { light: { phd: '#e57200', trainee: '#d6457a', early: '#4fb3e8', late: '#232d4b', bg: 'sitelight' },
+                 dark:  { phd: '#ff8f2e', trainee: '#ff6f91', early: '#4cc3f5', late: '#8b7bff', bg: 'sitedark' } };
+  const presetFor = k => k === 'site' ? SITE[siteDark() ? 'dark' : 'light'] : PRESETS[k];
+  const P = { ...presetFor('site') }; let bgKey = P.bg;
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, f) => { const [x, y] = [hex(a), hex(b)]; return `rgb(${x.map((v, i) => Math.round(v + (y[i] - v) * f)).join(',')})`; };
+  const ramp = f => mix(P.early, P.late, f);
+  const ink = () => BGS[bgKey].dark
+    ? { hub: '#ffffff', hubText: '#0b1020', edge: '#a9b6dc', label: '#dfe5f5', halo: 'rgba(11,16,32,0.85)', title: '#e8ecf7', muted: '#93a0bf', phdLabel: P.phd, trLabel: P.trainee }
+    : { hub: '#232d4b', hubText: '#ffffff', edge: '#5b6478', label: '#1f2933', halo: 'rgba(255,255,255,0.92)', title: '#1f2933', muted: '#52606d', phdLabel: mix(P.phd, '#000000', 0.3), trLabel: mix(P.trainee, '#000000', 0.25) };
+  const Y0 = 2008, Y1 = 2026;
+  const inline = document.getElementById('netdata');
+  const raw = inline ? JSON.parse(inline.textContent) : await (await fetch('network.json')).json();
+
+  // n.yrs = publication years; n.x / n.y are layout coordinates
+  const nodes = raw.nodes.map(n => ({ id: n.id, label: n.label, role: n.role, yrs: n.y, first: n.y[0] || Y1 }));
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const me = byId.get('Kuenze C');
+  const links = raw.links.map(([s, t, y]) => ({ source: byId.get(s), target: byId.get(t), y, hub: s === me.id || t === me.id }));
+  nodes.forEach(n => { n.nb = []; });
+  links.forEach(l => { l.source.nb.push(l); l.target.nb.push(l); });
+  const papersByYear = {}; (raw.paperYears || me.yrs).forEach(y => papersByYear[y] = (papersByYear[y] || 0) + 1);
+
+  // Force layout, computed once on the full network (Fruchterman-Reingold). The hub is pinned at the center and
+  // its own ties don't pull, so research groups spread out around it instead of collapsing onto it.
+  (function layout() {
+    const N = nodes.length, k = 2.2 / Math.sqrt(N);
+    nodes.forEach((n, i) => { const a = i * 2.39996, r = Math.sqrt((i + 1) / N); n.x = r * Math.cos(a); n.y = r * Math.sin(a); n.i = i; });
+    me.x = 0; me.y = 0;
+    const E = links.filter(l => !l.hub).map(l => [l.source.i, l.target.i, Math.log1p(l.y.length)]);
+    const dx = new Float64Array(N), dy = new Float64Array(N);
+    let t = 0.25;
+    for (let it = 0; it < 500; it++) {
+      dx.fill(0); dy.fill(0);
+      for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+        const a = nodes[i], b = nodes[j]; let ex = a.x - b.x, ey = a.y - b.y; const d2 = ex * ex + ey * ey + 1e-9;
+        const f = k * k / d2; dx[i] += ex * f; dy[i] += ey * f; dx[j] -= ex * f; dy[j] -= ey * f;
+      }
+      for (const [i, j, w] of E) {
+        const a = nodes[i], b = nodes[j]; const ex = a.x - b.x, ey = a.y - b.y; const d = Math.hypot(ex, ey) + 1e-9;
+        const f = w * d / k; dx[i] -= ex * f; dy[i] -= ey * f; dx[j] += ex * f; dy[j] += ey * f;
+      }
+      for (let i = 0; i < N; i++) {
+        const n = nodes[i]; if (n === me) continue;
+        const r = Math.hypot(n.x, n.y); dx[i] -= 0.08 * n.x * r; dy[i] -= 0.08 * n.y * r;
+        const L = Math.hypot(dx[i], dy[i]) + 1e-9, s = Math.min(L, t) / L; n.x += dx[i] * s; n.y += dy[i] * s;
+      }
+      t = Math.max(0.002, t * 0.992);
+    }
+    // nudge apart overlapping circles
+    const rad = n => 0.012 + 0.0045 * Math.sqrt(n.yrs.length);
+    for (let it = 0; it < 120; it++) for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+      const a = nodes[i], b = nodes[j]; const ex = a.x - b.x, ey = a.y - b.y, d = Math.hypot(ex, ey) + 1e-9, need = (rad(a) + rad(b)) * 1.5;
+      if (d < need) { const p = (need - d) / d * 0.3; if (a !== me) { a.x += ex * p; a.y += ey * p; } if (b !== me) { b.x -= ex * p; b.y -= ey * p; } }
+    }
+  })();
+  // spread the crowded core: scale to the 95th-percentile radius and apply a gentle radial fisheye
+  {
+    const rs = nodes.map(n => Math.hypot(n.x, n.y)).sort((a, b) => a - b), r95 = rs[Math.floor(rs.length * 0.95)] || 1;
+    nodes.forEach(n => { const r = Math.hypot(n.x, n.y); if (!r) return; const rn = Math.pow(Math.min(1, r / r95), 0.6) * (r > r95 ? 1 + Math.min(0.08, (r - r95) / r95 * 0.05) : 1); n.x = n.x / r * rn; n.y = n.y / r * rn; });
+  }
+  const ext = 1.0;
+
+  const cv = document.getElementById('cv'), stage = document.getElementById('stage'), tip = document.getElementById('tip');
+  let ctx = cv.getContext('2d'), W = 0, H = 0, S = 1, dpr = 1;
+  function resize() {
+    W = stage.clientWidth; H = Math.max(420, Math.min(window.innerHeight * 0.78, W * 0.82));
+    dpr = window.devicePixelRatio || 1; cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
+    S = (Math.min(W, H) / 2 - 34) / ext; draw();
+  }
+  let zk = 1, zx = 0, zy = 0; // zoom factor and pan offset (screen px)
+  const sx = n => W / 2 + zx + n.x * S * zk, sy = n => H / 2 + zy + n.y * S * zk;
+
+  let year = Y1, minP = 1, spot = null, hover = null, focus = null, born = new Map();
+  const count = (n, yr) => { let c = 0; for (const y of n.yrs) if (y <= yr) c++; return c; };
+  const lcount = (l, yr) => { let c = 0; for (const y of l.y) if (y <= yr) c++; return c; };
+  const visible = n => n === me || count(n, year) >= minP;
+  const colorOf = n => n.role === 'me' ? ink().hub : n.role === 'phd' ? P.phd : n.role === 'trainee' ? P.trainee : ramp((n.first - Y0) / (Y1 - Y0));
+  const radius = n => (n === me ? 15 : 2.2 + Math.sqrt(count(n, year)) * 2.3) * Math.pow(zk, 0.35);
+
+  function draw(t = performance.now()) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const K = ink(), dark = BGS[bgKey].dark;
+    if (BGS[bgKey].paint) BGS[bgKey].paint(ctx, W, H);
+    const act = hover || focus;
+    const nbSet = act ? new Set(act.nb.filter(l => lcount(l, year)).flatMap(l => [l.source, l.target])) : null;
+    const lit = n => (!act || nbSet.has(n)) && (!spot || n === me || n.role === spot || (act && nbSet.has(n)));
+    // ties
+    ctx.lineCap = 'round';
+    for (const l of links) {
+      const c = lcount(l, year); if (!c || !visible(l.source) || !visible(l.target)) continue;
+      const on = act ? (l.source === act || l.target === act) : true;
+      let a = l.hub ? 0.05 + 0.012 * c : 0.07 + 0.05 * c;
+      if (act) a = on ? 0.55 : 0.015;
+      else if (spot) a = (l.source.role === spot || l.target.role === spot) ? Math.min(0.6, a * 3) : a * 0.25;
+      ctx.strokeStyle = on && act ? colorOf(act === me ? (l.source === me ? l.target : l.source) : act) : K.edge;
+      ctx.globalAlpha = Math.min(0.7, a); ctx.lineWidth = 0.4 + Math.sqrt(c) * 0.55;
+      ctx.beginPath(); ctx.moveTo(sx(l.source), sy(l.source)); ctx.lineTo(sx(l.target), sy(l.target)); ctx.stroke();
+    }
+    // nodes
+    const order = nodes.filter(visible).sort((a, b) => (a.role === 'collab') - (b.role === 'collab') || 0).reverse();
+    for (const n of order) {
+      const r = radius(n), on = lit(n), col = colorOf(n);
+      const b = born.get(n); const age = b ? (t - b) / 900 : 9;
+      ctx.globalAlpha = on ? 1 : 0.12;
+      if (age < 1) { ctx.beginPath(); ctx.arc(sx(n), sy(n), r + 14 * age, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.globalAlpha = (1 - age) * 0.8; ctx.stroke(); ctx.globalAlpha = on ? 1 : 0.12; }
+      if (dark && n.role !== 'collab' && on) { ctx.shadowColor = col; ctx.shadowBlur = (n === me ? 28 : 14) * dpr; }
+      ctx.beginPath(); ctx.arc(sx(n), sy(n), r * Math.min(1, 0.3 + age), 0, 7); ctx.fillStyle = col; ctx.fill();
+      ctx.shadowBlur = 0;
+      if (!dark && n.role === 'collab') { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 0.8; ctx.stroke(); }
+      if (n.role === 'phd') { ctx.beginPath(); ctx.arc(sx(n), sy(n), r + 3, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke(); }
+    }
+    // labels
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (const n of order) {
+      if (n === me) continue;
+      const c = count(n, year), on = lit(n);
+      const show = (act && nbSet.has(n)) || (!act && on && (n.role === 'phd' || c >= Math.max(1, (W < 600 ? 10 : 6) / (zk * zk)) || (spot && n.role === spot)));
+      if (!show) continue;
+      const big = n.role === 'phd' || c >= 10;
+      ctx.font = `${big ? 600 : 400} ${big ? 12 : 10.5}px "Libre Franklin", system-ui, sans-serif`;
+      ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeStyle = K.halo;
+      const y0 = sy(n) + radius(n) + 4; ctx.strokeText(n.label, sx(n), y0);
+      ctx.fillStyle = n.role === 'phd' ? K.phdLabel : n.role === 'trainee' ? K.trLabel : K.label; ctx.fillText(n.label, sx(n), y0);
+    }
+    ctx.globalAlpha = 1; ctx.font = '700 12px "Libre Franklin", system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.fillStyle = K.hubText;
+    ctx.fillText('CK', sx(me), sy(me));
+    if (!exporting && [...born.values()].some(b => t - b < 900)) requestAnimationFrame(() => draw());
+  }
+
+  // ---- PNG export: redraw the current view (zoom, year, highlights) at high resolution ----
+  let exporting = false;
+  function exportPng() {
+    const scale = +document.getElementById('scale').value, withLegend = document.getElementById('withLegend').checked;
+    const off = document.createElement('canvas'); off.width = Math.round(W * scale); off.height = Math.round(H * scale);
+    const saved = [ctx, dpr]; ctx = off.getContext('2d'); dpr = scale; exporting = true;
+    try {
+      draw(performance.now() + 1e7);
+      if (withLegend) drawLegend(ctx);
+    } finally { [ctx, dpr] = saved; exporting = false; }
+    const filename = `Kuenze-coauthor-network-${year}${bgKey === 'none' ? '-transparent' : ''}.png`;
+    const note = document.getElementById('saveNote');
+    off.toBlob(async blob => {
+      const size = `${off.width} × ${off.height} px`;
+      if (dl) { // inside claude.ai: the viewer confirms the save
+        try { await dl.save({ filename, data: blob }); note.textContent = `Saved ${size}`; }
+        catch (e) { note.textContent = e && e.code === 'declined' ? 'Save cancelled.' : e && e.code === 'rate_limited' ? 'Another save is open; try again in a moment.' : 'Saving isn’t available here. Use the standalone HTML file.'; }
+        return;
+      }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      note.textContent = `Saved ${size}`;
+    }, 'image/png');
+  }
+  function drawLegend(g) {
+    const K = ink(), vis = nodes.filter(n => n !== me && visible(n));
+    let p = 0; for (const y in papersByYear) if (+y <= year) p += papersByYear[y];
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.globalAlpha = 1; g.textAlign = 'left'; g.textBaseline = 'top';
+    g.fillStyle = K.title; g.font = '700 18px "Libre Franklin", system-ui, sans-serif'; g.fillText('Christopher Kuenze · Co-author Network', 18, 16);
+    g.fillStyle = K.muted; g.font = '400 11.5px "Libre Franklin", system-ui, sans-serif';
+    g.fillText(`${p} published papers, 2008–${year} · ${vis.length} co-authors · size = papers with Chris, line = papers shared`, 18, 42);
+    const items = [[ink().hub, 'Dr. Kuenze'], [P.phd, 'Doctoral student advised'], [P.trainee, 'Other trainee']];
+    let y = H - 92;
+    for (const [c, t] of items) {
+      g.beginPath(); g.arc(24, y + 6, 5.5, 0, 7); g.fillStyle = c; g.fill();
+      if (!BGS[bgKey].dark) { g.strokeStyle = 'rgba(0,0,0,0.15)'; g.lineWidth = 0.6; g.stroke(); }
+      g.fillStyle = K.label; g.font = '400 11px "Libre Franklin", system-ui, sans-serif'; g.fillText(t, 36, y); y += 18;
+    }
+    const gr = g.createLinearGradient(18, 0, 168, 0); gr.addColorStop(0, P.early); gr.addColorStop(1, P.late);
+    g.fillStyle = gr; g.fillRect(18, y + 2, 150, 7);
+    g.fillStyle = K.muted; g.font = '400 10px "Libre Franklin", system-ui, sans-serif';
+    g.fillText('Collaborators by first paper:  2008', 18, y + 13); g.textAlign = 'right'; g.fillText('2026', 168, y + 13);
+  }
+
+  // ---- Insights: leaderboards + fun facts, recomputed for the selected year ----
+  const PL = (raw.paperList || []).map(p => ({ ...p, au: p.a.map(id => byId.get(id)).filter(Boolean) }));
+  const citesAsOf = (raw.meta && raw.meta.citesAsOf) || '';
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const BOARDS = [
+    { key: 'papers', tab: 'Most papers together', desc: 'Co-authors ranked by the number of papers you have published together.',
+      val: s => s.n, fmt: v => v, sub: s => `${s.y0}–${s.y1}` },
+    { key: 'cites', tab: 'Most cited together', desc: () => `Total Google Scholar citations of the papers you share${citesAsOf ? ` (counts as of ${citesAsOf})` : ''}.`,
+      val: s => s.c, fmt: v => v.toLocaleString(), sub: s => `${s.n} paper${s.n === 1 ? '' : 's'} · ${Math.round(s.c / s.n)} per paper` },
+    { key: 'jif', tab: 'Highest-impact journals', desc: 'Average 2025 Journal Impact Factor of your shared papers (co-authors with 3 or more shared papers that have a JIF).',
+      val: s => s.jn >= 3 ? s.js / s.jn : null, fmt: v => v.toFixed(1), sub: s => `${s.n} papers · top: ${s.topJ}` },
+    { key: 'span', tab: 'Longest collaborations', desc: 'Years from your first to your most recent paper together.',
+      val: s => s.y1 - s.y0 + 1, fmt: v => `${v} yr`, sub: s => `${s.y0}–${s.y1} · ${s.n} papers` },
+    { key: 'rising', tab: 'Rising collaborators', desc: () => `Most papers together in the last three years (${year - 2}–${year}).`,
+      val: s => s.recent || null, fmt: v => v, sub: s => `${s.n} total · since ${s.y0}` },
+    { key: 'bridge', tab: 'Connectors', desc: 'How many of your other co-authors each person has also published with. Connectors tie your research groups together.',
+      val: s => s.deg || null, fmt: v => v, sub: s => `${s.n} papers with you` },
+  ];
+  let board = 'papers';
+  const tabs = document.getElementById('tabs');
+  BOARDS.forEach(b => {
+    const t = document.createElement('button'); t.type = 'button'; t.role = 'tab'; t.textContent = b.tab; t.dataset.key = b.key;
+    t.setAttribute('aria-selected', String(b.key === board));
+    t.addEventListener('click', () => { board = b.key; tabs.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', String(x === t))); renderInsights(); });
+    tabs.appendChild(t);
+  });
+  function collabStats() {
+    const ps = PL.filter(p => p.y && p.y <= year), S = new Map();
+    for (const p of ps) for (const n of p.au) {
+      if (n === me) continue;
+      let s = S.get(n); if (!s) S.set(n, s = { node: n, n: 0, c: 0, js: 0, jn: 0, y0: 9999, y1: 0, recent: 0, jc: {}, co: new Set() });
+      s.n++; s.c += p.c; if (p.f) { s.js += p.f; s.jn++; } s.y0 = Math.min(s.y0, p.y); s.y1 = Math.max(s.y1, p.y);
+      if (p.y >= year - 2) s.recent++; if (p.j) s.jc[p.j] = (s.jc[p.j] || 0) + 1;
+      for (const m of p.au) if (m !== n && m !== me) s.co.add(m);
+    }
+    for (const s of S.values()) { s.deg = s.co.size; s.topJ = Object.entries(s.jc).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'; }
+    return { ps, S };
+  }
+  function renderInsights() {
+    const { ps, S } = collabStats();
+    document.getElementById('insYear').textContent = year < Y1 ? `through ${year}` : '';
+    document.getElementById('insNote').textContent = `${ps.length} published papers${citesAsOf ? ` · citations from Google Scholar, ${citesAsOf}` : ''} · JIF = 2025 Journal Impact Factor. Click a name to find it in the network.`;
+    // leaderboard
+    const B = BOARDS.find(b => b.key === board);
+    document.getElementById('boardDesc').textContent = typeof B.desc === 'function' ? B.desc() : B.desc;
+    const rows = [...S.values()].map(s => ({ s, v: B.val(s) })).filter(r => r.v != null && r.v > 0)
+      .sort((a, b) => b.v - a.v || b.s.n - a.s.n).slice(0, 10);
+    const max = rows.length ? rows[0].v : 1, ol = document.getElementById('board'); ol.innerHTML = '';
+    rows.forEach((r, i) => {
+      const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button';
+      const col = colorOf(r.s.node);
+      b.innerHTML = `<span class="rk">${i + 1}</span><span class="nm" style="color:${col}">${esc(r.s.node.label)}<small>${esc(B.sub(r.s))}</small></span>`
+        + `<span class="bar"><i style="width:${Math.max(4, r.v / max * 100)}%;background:${col}"></i></span><span class="vl">${esc(B.fmt(r.v))}</span>`;
+      b.addEventListener('click', () => { focus = r.s.node; draw(); stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.querySelectorAll('.stu').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.id === focus.id))); });
+      li.appendChild(b); ol.appendChild(li);
+    });
+    if (!rows.length) ol.innerHTML = '<li class="muted" style="padding:8px">Not enough papers yet for this list.</li>';
+    // fun facts
+    const cites = ps.map(p => p.c).sort((a, b) => b - a), total = cites.reduce((a, b) => a + b, 0);
+    let h = 0; while (h < cites.length && cites[h] >= h + 1) h++;
+    const top = ps.slice().sort((a, b) => b.c - a.c)[0];
+    const byYear = {}; ps.forEach(p => byYear[p.y] = (byYear[p.y] || 0) + 1);
+    const busiest = Object.entries(byYear).sort((a, b) => b[1] - a[1] || b[0] - a[0])[0];
+    const jc = {}; ps.forEach(p => { if (p.j) jc[p.j] = (jc[p.j] || 0) + 1; });
+    const favJ = Object.entries(jc).sort((a, b) => b[1] - a[1])[0];
+    const senior = ps.filter(p => p.s).length, trFirst = ps.filter(p => p.ft).length;
+    const team = arr => arr.length ? (arr.reduce((a, p) => a + p.a.length, 0) / arr.length) : 0;
+    const early = ps.filter(p => p.y < Y0 + 8), late = ps.filter(p => p.y > year - 5);
+    const withJ = ps.filter(p => p.f), avgJ = withJ.length ? withJ.reduce((a, p) => a + p.f, 0) / withJ.length : 0;
+    const newbies = [...S.values()].filter(s => s.y0 === year).length;
+    const students = [...S.values()].filter(s => s.node.role === 'phd').sort((a, b) => b.c - a.c)[0];
+    const F = [
+      ['Citations', total.toLocaleString(), `h-index ${h} across these papers`],
+      ['Most-cited paper', top ? top.c.toLocaleString() : '—', top ? `${top.t} (${top.j}, ${top.y})` : ''],
+      ['Busiest year', busiest ? busiest[0] : '—', busiest ? `${busiest[1]} papers` : ''],
+      ['Favorite journal', favJ ? favJ[1] : '—', favJ ? `papers in ${favJ[0]}` : ''],
+      ['Senior-author papers', senior, `${ps.length ? Math.round(senior / ps.length * 100) : 0}% of papers list you last`],
+      ['Trainee-led papers', trFirst, 'first author is a trainee († on the CV)'],
+      ['Team size', team(late).toFixed(1), `named authors per paper, last 5 years (vs ${team(early).toFixed(1)} before ${Y0 + 8})`],
+      ['Average JIF', avgJ.toFixed(1), `across ${withJ.length} papers with a 2025 JIF`],
+      [`New co-authors in ${year}`, newbies, 'people with their first paper with you that year'],
+      ['Most-cited student', students ? students.c.toLocaleString() : '—', students ? `${students.node.label}, ${students.n} papers together` : ''],
+    ];
+    const box = document.getElementById('facts'); box.innerHTML = '';
+    F.forEach(([k, v, s], i) => {
+      const d = document.createElement('div'); d.className = 'fact';
+      if (i === 9) d.style.setProperty('--fact', P.phd);
+      d.innerHTML = `<span>${esc(k)}</span><b>${esc(v)}</b><small>${esc(s)}</small>`; box.appendChild(d);
+    });
+  }
+
+  // ---- color / background controls ----
+  const root = document.documentElement;
+  function applyColors() {
+    for (const k of ['phd', 'trainee', 'early', 'late']) { root.style.setProperty('--' + k, P[k]); document.getElementById('col-' + k).value = P[k]; }
+    stage.dataset.bg = bgKey; document.getElementById('bg').value = bgKey; draw(); renderInsights();
+  }
+  document.getElementById('preset').addEventListener('change', e => { const p = presetFor(e.target.value); Object.assign(P, p); bgKey = p.bg; applyColors(); });
+  const followTheme = () => { if (document.getElementById('preset').value === 'site') { const p = presetFor('site'); Object.assign(P, p); bgKey = p.bg; applyColors(); } };
+  darkMQ.addEventListener('change', followTheme);
+  new MutationObserver(followTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.getElementById('bg').addEventListener('change', e => { bgKey = e.target.value; applyColors(); });
+  for (const k of ['phd', 'trainee', 'early', 'late'])
+    document.getElementById('col-' + k).addEventListener('input', e => { P[k] = e.target.value; document.getElementById('preset').value = 'custom'; applyColors(); });
+  // standalone file: plain browser download. Inside claude.ai: the "downloads" capability (viewer confirms).
+  let dl = null, inFrame = true; try { inFrame = window.top !== window.self; } catch (e) { inFrame = true; }
+  const saveBtn = document.getElementById('savePng');
+  saveBtn.addEventListener('click', exportPng);
+  if (inFrame) {
+    saveBtn.disabled = true;
+    const off = () => { document.getElementById('saveNote').textContent = 'Saving isn’t available in this view. Use the standalone HTML file.'; };
+    if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { dl = d; if (d) saveBtn.disabled = false; else off(); }).catch(off);
+    else off();
+  }
+
+  function stats() {
+    const vis = nodes.filter(n => n !== me && visible(n));
+    let p = 0; for (const y in papersByYear) if (+y <= year) p += papersByYear[y];
+    const ties = links.filter(l => lcount(l, year) && visible(l.source) && visible(l.target)).length;
+    const set = (id, v) => { document.getElementById(id).textContent = v; };
+    set('sPapers', p); set('sAuthors', vis.length); set('sPhd', vis.filter(n => n.role === 'phd').length); set('sTies', ties.toLocaleString());
+    document.querySelectorAll('.stu').forEach(b => b.classList.toggle('dim', !visible(byId.get(b.dataset.id))));
+    if (anfield) LFC.forEach(([v, k], i) => { const s = document.querySelectorAll('header .stat')[i]; s.querySelector('b').textContent = v; s.querySelector('span').textContent = k; });
+  }
+
+  // ---- hidden: Anfield mode. Click the CK node three times quickly (or type "ynwa") to switch; again to switch back. ----
+  // Liverpool FC honours as listed at liverpoolfc.com/history/honours (checked Nov 2026).
+  const LFC = [['1892', 'Founded'], ['20', 'League titles'], ['6', 'European Cups'], ['52', 'Major honours']];
+  const STAT_LABELS = [...document.querySelectorAll('header .stat span')].map(s => s.textContent);
+  let anfield = false, beforeAnfield = null;
+  function setAnfield(on) {
+    if (on === anfield) return;
+    const h1 = document.querySelector('header h1'), sub = document.querySelector('header .sub');
+    if (on) {
+      beforeAnfield = { h1: h1.textContent, sub: sub.textContent };
+      h1.textContent = 'This is Anfield';
+      sub.textContent = "You'll Never Walk Alone. The club's 100 greatest players (2026 fan poll) and ten great managers, linked when their years at Liverpool overlapped.";
+    } else {
+      h1.textContent = beforeAnfield.h1; sub.textContent = beforeAnfield.sub;
+      document.querySelectorAll('header .stat span').forEach((s, i) => s.textContent = STAT_LABELS[i]);
+    }
+    anfield = on; document.body.classList.toggle('anfield', on);
+    // swap every panel: research panels hide, the Anfield view shows
+    document.querySelectorAll('.wrap > .controls, .wrap > .main, .wrap > .insights').forEach(el => el.hidden = on);
+    document.getElementById('anfieldView').hidden = !on;
+    document.dispatchEvent(new CustomEvent('anfield', { detail: on }));
+    stats(); if (!on) { resize(); }
+  }
+  document.addEventListener('anfield-exit', () => setAnfield(false));
+  let hubClicks = [], typed = '';
+  window.addEventListener('keydown', ev => {
+    if (ev.target.closest && ev.target.closest('input, select, textarea')) return;
+    typed = (typed + ev.key.toLowerCase()).slice(-4); if (typed === 'ynwa') { setAnfield(!anfield); typed = ''; }
+  });
+  function setYear(y, animate) {
+    const before = new Set(nodes.filter(visible));
+    year = y; document.getElementById('year').value = y; document.getElementById('yearLabel').textContent = y;
+    if (animate) { const t = performance.now(); nodes.filter(visible).forEach(n => { if (!before.has(n)) born.set(n, t); }); }
+    stats(); draw(); renderInsights();
+  }
+
+  // cohort panel
+  const cohort = document.getElementById('cohort');
+  nodes.filter(n => n.role === 'phd').sort((a, b) => a.first - b.first).forEach(n => {
+    const b = document.createElement('button'); b.className = 'stu'; b.type = 'button'; b.dataset.id = n.id; b.setAttribute('aria-pressed', 'false');
+    const co = new Set(n.nb.flatMap(l => [l.source, l.target])); co.delete(n); co.delete(me);
+    b.innerHTML = `<b>${n.label}</b><em>${n.yrs.length} papers</em><small>${n.first}–${n.yrs[n.yrs.length - 1]} · ${co.size} co-authors beyond Chris</small>`;
+    b.addEventListener('click', () => { focus = focus === n ? null : n; document.querySelectorAll('.stu').forEach(x => x.setAttribute('aria-pressed', String(x === b && !!focus))); draw(); });
+    cohort.appendChild(b);
+  });
+
+  // hover / tap
+  function pick(ev) {
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    let best = null, bd = 14;
+    for (const n of nodes) { if (!visible(n)) continue; const d = Math.hypot(sx(n) - x, sy(n) - y) - radius(n); if (d < bd) { bd = d; best = n; } }
+    return { n: best, x, y };
+  }
+  function showTip({ n, x, y }) {
+    if (!n) { tip.hidden = true; return; }
+    const c = count(n, year), yrs = n.yrs.filter(v => v <= year);
+    const roleTxt = { me: 'Hub', phd: 'Doctoral student', trainee: 'Trainee', collab: 'Collaborator' }[n.role];
+    const top = n.nb.filter(l => !l.hub && lcount(l, year)).sort((a, b) => lcount(b, year) - lcount(a, year)).slice(0, 3)
+      .map(l => (l.source === n ? l.target : l.source).label);
+    tip.innerHTML = n === me
+      ? `<h3>Christopher Kuenze</h3><div class="k">${nodes.filter(v => v !== me && visible(v)).length} co-authors through ${year}</div>`
+      : `<div class="role" style="color:${colorOf(n)}">${roleTxt}</div><h3>${n.label}</h3>
+         <div>${c} paper${c === 1 ? '' : 's'} with Chris <span class="k">(${yrs[0]}–${yrs[yrs.length - 1]})</span></div>
+         ${top.length ? `<div class="k">Most often also with: ${top.join(', ')}</div>` : ''}`;
+    tip.hidden = false;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.min(W - tw - 8, Math.max(8, x + 14)) + 'px';
+    tip.style.top = Math.min(H - th - 8, Math.max(8, y + 14)) + 'px';
+  }
+  // zoom and pan: wheel / pinch / buttons zoom around a point; drag pans; double-click zooms in
+  const ZMIN = 1, ZMAX = 14;
+  function zoomAt(f, px, py) {
+    const nk = Math.max(ZMIN, Math.min(ZMAX, zk * f)); if (nk === zk) return;
+    const ox = px - W / 2, oy = py - H / 2;
+    zx = ox - (ox - zx) * nk / zk; zy = oy - (oy - zy) * nk / zk; zk = nk;
+    if (zk === 1) { zx = 0; zy = 0; }
+    clampPan(); document.getElementById('zoomLevel').textContent = Math.round(zk * 100) + '%'; draw();
+  }
+  function clampPan() { const lim = Math.min(W, H) / 2 * zk; zx = Math.max(-lim, Math.min(lim, zx)); zy = Math.max(-lim, Math.min(lim, zy)); }
+  const local = ev => { const r = cv.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; };
+  cv.addEventListener('wheel', ev => { ev.preventDefault(); const [x, y] = local(ev); zoomAt(Math.exp(-ev.deltaY * 0.0018), x, y); }, { passive: false });
+  cv.addEventListener('dblclick', ev => { const [x, y] = local(ev); zoomAt(ev.shiftKey ? 0.5 : 2, x, y); });
+  document.getElementById('zIn').addEventListener('click', () => zoomAt(1.6, W / 2, H / 2));
+  document.getElementById('zOut').addEventListener('click', () => zoomAt(1 / 1.6, W / 2, H / 2));
+  document.getElementById('zReset').addEventListener('click', () => { zk = 1; zx = 0; zy = 0; document.getElementById('zoomLevel').textContent = '100%'; draw(); });
+
+  const ptrs = new Map(); let drag = null, pinch = null, moved = false;
+  cv.addEventListener('pointerdown', ev => {
+    cv.setPointerCapture(ev.pointerId); ptrs.set(ev.pointerId, local(ev)); moved = false;
+    if (ptrs.size === 1) drag = { start: local(ev), zx, zy };
+    if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: zk }; drag = null; }
+  });
+  cv.addEventListener('pointermove', ev => {
+    const p = local(ev);
+    if (ptrs.has(ev.pointerId)) ptrs.set(ev.pointerId, p);
+    if (pinch && ptrs.size === 2) {
+      const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      zoomAt(pinch.k * d / pinch.d / zk, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); moved = true; tip.hidden = true; return;
+    }
+    if (drag) {
+      const dx = p[0] - drag.start[0], dy = p[1] - drag.start[1];
+      if (Math.hypot(dx, dy) > 4) moved = true;
+      if (moved && zk > 1) { zx = drag.zx + dx; zy = drag.zy + dy; clampPan(); tip.hidden = true; cv.style.cursor = 'grabbing'; draw(); return; }
+    }
+    const q = pick(ev); if (q.n !== hover) { hover = q.n; draw(); } showTip(q); cv.style.cursor = q.n ? 'pointer' : (zk > 1 ? 'grab' : 'default');
+  });
+  const endPtr = ev => { ptrs.delete(ev.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) drag = null; };
+  cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+  cv.addEventListener('pointerleave', () => { hover = null; tip.hidden = true; draw(); });
+  cv.addEventListener('click', ev => { if (moved) return; const p = pick(ev);
+    if (p.n === me) { const t = performance.now(); hubClicks = hubClicks.filter(c => t - c < 1200).concat(t); if (hubClicks.length >= 3) { hubClicks = []; setAnfield(!anfield); return; } }
+    focus = p.n && p.n !== focus ? p.n : null; hover = null; draw(); showTip(p);
+    document.querySelectorAll('.stu').forEach(x => x.setAttribute('aria-pressed', String(!!focus && x.dataset.id === focus.id))); });
+  window.addEventListener('keydown', ev => {
+    if (ev.target.closest && ev.target.closest('input, select')) return;
+    if (ev.key === '+' || ev.key === '=') zoomAt(1.4, W / 2, H / 2);
+    else if (ev.key === '-' || ev.key === '_') zoomAt(1 / 1.4, W / 2, H / 2);
+    else if (ev.key === '0') document.getElementById('zReset').click();
+  });
+
+  // controls
+  document.getElementById('year').addEventListener('input', e => { stopPlay(); setYear(+e.target.value, true); });
+  document.getElementById('minp').addEventListener('change', e => { minP = +e.target.value; stats(); draw(); });
+  const chip = (id, role) => document.getElementById(id).addEventListener('click', e => {
+    spot = spot === role ? null : role;
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    if (spot) e.currentTarget.setAttribute('aria-pressed', 'true'); draw(); });
+  chip('cPhd', 'phd'); chip('cTr', 'trainee');
+  let timer = null; const playBtn = document.getElementById('play');
+  function stopPlay() { clearInterval(timer); timer = null; playBtn.textContent = '▶ Play'; }
+  playBtn.addEventListener('click', () => {
+    if (timer) return stopPlay();
+    playBtn.textContent = '❚❚ Pause';
+    if (year >= Y1) setYear(Y0, false);
+    timer = setInterval(() => { if (year >= Y1) return stopPlay(); setYear(year + 1, true); }, 900);
+  });
+
+  new ResizeObserver(resize).observe(stage);
+  resize(); setYear(Y1, false); applyColors();
+})();
+</script>
+
+<script>
+// ---- Anfield mode: Liverpool's 100 greatest players (2026 fan poll, liverpoolfc.com) and ten great managers ----
+// Linked when their years at the club overlapped (weight = overlapping seasons). Years are approximate.
+(function () {
+  const RANKED = [
+    ['Steven Gerrard',1998,2015],['Kenny Dalglish',1977,1990],['Ian Rush',1980,1996],['Mohamed Salah',2017,2026],['John Barnes',1987,1997],
+    ['Graeme Souness',1978,1984],['Alan Hansen',1977,1991],['Virgil van Dijk',2018,2026],['Roger Hunt',1958,1969],['Ian Callaghan',1960,1978],
+    ['Billy Liddell',1938,1961],['Robbie Fowler',1993,2001],['Ray Clemence',1967,1981],['Kevin Keegan',1971,1977],['Luis Suarez',2011,2014],
+    ['Alisson Becker',2018,2026],['Emlyn Hughes',1967,1979],['Phil Neal',1974,1985],['Sadio Mane',2016,2022],['Ian St John',1961,1971],
+    ['Phil Thompson',1971,1985],['Roberto Firmino',2015,2023],['Jamie Carragher',1996,2013],['Michael Owen',1996,2004],['Jordan Henderson',2011,2023],
+    ['Andy Robertson',2017,2026],['Ron Yeats',1961,1971],['Trent Alexander-Arnold',2016,2025],['Sami Hyypia',1999,2009],['Steve Heighway',1970,1981],
+    ['Gordon Hodgson',1925,1936],['Elisha Scott',1912,1934],['Ronnie Whelan',1979,1994],['Terry McDermott',1974,1982],['Mark Lawrenson',1981,1988],
+    ['Ray Kennedy',1974,1982],['Tommy Smith',1962,1978],['Steve McManaman',1990,1999],['Alan Kennedy',1978,1985],['Harry Chambers',1919,1928],
+    ['Steve Nicol',1981,1994],['Bruce Grobbelaar',1981,1994],['Jan Molby',1984,1996],['Fernando Torres',2007,2011],['Chris Lawler',1960,1975],
+    ['Steve McMahon',1985,1991],['Alex Raisbeck',1898,1909],['James Milner',2015,2023],['Jimmy Case',1973,1981],['John Toshack',1970,1978],
+    ['Jack Balmer',1935,1952],['Donald MacKinlay',1910,1928],['Peter Beardsley',1987,1991],['Xabi Alonso',2004,2009],['Divock Origi',2014,2022],
+    ['Jamie Redknapp',1991,2002],['Diogo Jota',2020,2025],['Bob Paisley',1939,1954],['Sammy Lee',1976,1986],['Ephraim Longworth',1910,1928],
+    ['Craig Johnston',1981,1988],['Peter Thompson',1963,1974],['John Arne Riise',2001,2008],['Pepe Reina',2005,2014],['John Aldridge',1987,1989],
+    ['Joe Gomez',2015,2026],['David Fairclough',1975,1983],['Fabinho',2018,2023],['Georginio Wijnaldum',2016,2021],['Albert Stubbins',1946,1953],
+    ['Emile Heskey',2000,2004],['Joel Matip',2016,2024],['Tom Bromilow',1919,1930],['Dietmar Hamann',1999,2006],["Alan A'Court",1952,1964],
+    ['Luis Diaz',2022,2025],['Ronnie Moran',1952,1965],['Tommy Lawrence',1957,1971],['Daniel Sturridge',2013,2019],['Ray Houghton',1987,1992],
+    ['Dirk Kuyt',2006,2012],['Matt Busby',1936,1940],['Vladimir Smicer',1999,2005],['Gerry Byrne',1955,1969],['Phil Taylor',1936,1954],
+    ['Jerzy Dudek',2001,2007],['Philippe Coutinho',2013,2018],['Sam Raybould',1900,1907],['Jack Parkinson',1903,1914],['David Johnson',1976,1982],
+    ['Danny Murphy',1997,2004],['Dick Forshaw',1919,1927],['Curtis Jones',2019,2026],['Lucas Leiva',2007,2017],['Adam Lallana',2014,2020],
+    ['Bobby Robinson',1904,1912],['Jack Cox',1898,1909],['Luis Garcia',2004,2007],['Dominik Szoboszlai',2023,2026],['Alexis Mac Allister',2023,2026],
+  ];
+  const MANAGERS = [ // name, from, to (managerial spell); Paisley and Dalglish merge with their player nodes
+    ['Tom Watson',1896,1915],['George Kay',1936,1951],['Bill Shankly',1959,1974],['Bob Paisley',1974,1983],['Joe Fagan',1983,1985],
+    ['Kenny Dalglish',1985,1991],['Gerard Houllier',1998,2004],['Rafael Benitez',2004,2010],['Jurgen Klopp',2015,2024],['Arne Slot',2024,2026],
+  ];
+  const HONOURS = [['20','League titles'],['6','European Cups'],['8','FA Cups'],['10','League Cups'],['3','UEFA Cups'],['4','UEFA Super Cups'],['1','Club World Cup'],['16','Charity / Community Shields']];
+  const RED = '#ff4d5e', DEEP = '#c8102e', GREEN = '#00b2a9', WHITE = '#ffffff';
+
+  const nodes = RANKED.map(([name, a, b], i) => ({ name, rank: i + 1, pa: a, pb: b, ma: null, mb: null }));
+  const byName = new Map(nodes.map(n => [n.name, n]));
+  for (const [name, a, b] of MANAGERS) {
+    const n = byName.get(name);
+    if (n) { n.ma = a; n.mb = b; } else { const m = { name, rank: null, pa: null, pb: null, ma: a, mb: b }; nodes.push(m); byName.set(name, m); }
+  }
+  nodes.forEach(n => { n.a = Math.min(...[n.pa, n.ma].filter(v => v != null)); n.b = Math.max(...[n.pb, n.mb].filter(v => v != null));
+    n.kind = n.rank && n.ma ? 'both' : n.rank ? 'player' : 'manager'; });
+  const ov = (a1, b1, a2, b2) => (a1 == null || a2 == null) ? 0 : Math.min(b1, b2) - Math.max(a1, a2);
+  const links = [];
+  for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+    const x = nodes[i], y = nodes[j];
+    const team = ov(x.pa, x.pb, y.pa, y.pb), boss = Math.max(ov(x.ma, x.mb, y.pa, y.pb), ov(y.ma, y.mb, x.pa, x.pb));
+    const w = Math.max(team, boss); if (w >= 1) links.push({ s: x, t: y, w, boss: boss >= 1 && boss >= team });
+  }
+  nodes.forEach(n => n.nb = links.filter(l => l.s === n || l.t === n));
+
+  // layout: a timeline. x = middle of the person's years at the club (1896 -> 2026); managers ride along the top,
+  // players spread vertically (higher-ranked nearer the middle) and are nudged apart so nobody overlaps.
+  (function layout() {
+    const X0 = 1893, X1 = 2029;
+    nodes.forEach((n, i) => {
+      n.x = ((n.a + n.b) / 2 - X0) / (X1 - X0) * 2 - 1;
+      n.y = n.kind === 'manager' ? (MANAGERS.findIndex(m => m[0] === n.name) % 2 ? -0.7 : -0.9) : n.kind === 'both' ? -0.52 : ((i % 2 ? 1 : -1) * (0.05 + (n.rank || 50) / 100 * 0.55));
+    });
+    const r = n => (n.kind !== 'player' ? 0.05 : 0.022 + (101 - n.rank) / 100 * 0.03);
+    for (let it = 0; it < 400; it++) for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const p = nodes[i], q = nodes[j], dx = (p.x - q.x) * 1.6, dy = p.y - q.y, d = Math.hypot(dx, dy) + 1e-9, need = r(p) + r(q) + 0.03;
+      if (d < need) { const m = (need - d) / 2, uy = dy / d || (i % 2 ? 1 : -1);
+        if (p.kind !== 'manager') p.y = Math.max(-0.95, Math.min(0.95, p.y + uy * m));
+        if (q.kind !== 'manager') q.y = Math.max(-0.95, Math.min(0.95, q.y - uy * m)); }
+    }
+  })();
+
+  const cv = document.getElementById('afCanvas'), ctx = cv.getContext('2d'), stage = document.getElementById('afStage'), tip = document.getElementById('afTip');
+  let W = 0, H = 0, dpr = 1, year = 2026, hover = null, focus = null, timer = null, built = false;
+  const sx = n => W / 2 + n.x * (W / 2 - 60), sy = n => H / 2 + 6 + n.y * (H / 2 - 44);
+  const vis = n => n.a <= year;
+  const rad = n => n.kind !== 'player' ? 9 : 3 + (101 - n.rank) / 100 * 7;
+  const col = n => n.kind === 'manager' ? GREEN : n.kind === 'both' ? WHITE : n.rank <= 25 ? RED : DEEP;
+  function resize() { W = stage.clientWidth; H = Math.max(420, Math.min(innerHeight * 0.75, W * 0.8)); dpr = devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px'; draw(); }
+  function draw() {
+    if (!W) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const g = ctx.createRadialGradient(W / 2, H * 0.45, 0, W / 2, H * 0.45, Math.max(W, H) * 0.7); g.addColorStop(0, '#a10d24'); g.addColorStop(1, '#3a0510');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.font = '500 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let y = 1900; y <= 2020; y += 20) { const x = sx({ x: ((y - 1893) / 136) * 2 - 1 }); ctx.globalAlpha = 0.18; ctx.strokeStyle = '#ffd6dc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, 22); ctx.lineTo(x, H - 30); ctx.stroke(); ctx.globalAlpha = 0.7; ctx.fillStyle = '#ffd6dc'; ctx.fillText(y, x, 6); }
+    ctx.globalAlpha = 1;
+    const act = hover || focus, nb = act ? new Set(act.nb.flatMap(l => [l.s, l.t])) : null;
+    for (const l of links) { if (!vis(l.s) || !vis(l.t)) continue;
+      const on = act ? (l.s === act || l.t === act) : true;
+      ctx.globalAlpha = act ? (on ? 0.6 : 0.03) : Math.min(0.3, 0.03 + 0.015 * l.w);
+      ctx.strokeStyle = l.boss ? GREEN : '#ffd6dc'; ctx.lineWidth = 0.4 + Math.sqrt(l.w) * 0.35;
+      ctx.beginPath(); ctx.moveTo(sx(l.s), sy(l.s)); ctx.lineTo(sx(l.t), sy(l.t)); ctx.stroke(); }
+    for (const n of nodes) { if (!vis(n)) continue; ctx.globalAlpha = !act || nb.has(n) ? 1 : 0.15;
+      ctx.beginPath(); ctx.arc(sx(n), sy(n), rad(n), 0, 7); ctx.fillStyle = col(n); ctx.fill();
+      if (n.kind !== 'player') { ctx.beginPath(); ctx.arc(sx(n), sy(n), rad(n) + 3, 0, 7); ctx.strokeStyle = col(n); ctx.lineWidth = 1.2; ctx.stroke(); } }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (const n of nodes) { if (!vis(n)) continue;
+      const show = act ? nb.has(n) : (n.kind !== 'player' || n.rank <= 20);
+      if (!show) continue; const big = n.kind !== 'player' || n.rank <= 10;
+      ctx.globalAlpha = 1; ctx.font = `${big ? 700 : 500} ${big ? 12 : 10.5}px "Libre Franklin", system-ui, sans-serif`;
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(40,4,12,0.85)'; const y0 = sy(n) + rad(n) + 4;
+      ctx.strokeText(n.name, sx(n), y0); ctx.fillStyle = n.kind === 'manager' ? '#7ff0e6' : '#ffffff'; ctx.fillText(n.name, sx(n), y0); }
+    ctx.globalAlpha = 1;
+  }
+  function pick(ev) { const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = 12;
+    for (const n of nodes) { if (!vis(n)) continue; const d = Math.hypot(sx(n) - x, sy(n) - y) - rad(n); if (d < bd) { bd = d; best = n; } } return { n: best, x, y }; }
+  const yrs = (a, b) => a == null ? '' : `${a}–${b >= 2026 ? 'present' : b}`;
+  function showTip({ n, x, y }) { if (!n) { tip.hidden = true; return; }
+    const lines = [];
+    if (n.rank) lines.push(`No. ${n.rank} in the Top 100 · player ${yrs(n.pa, n.pb)}`);
+    if (n.ma) lines.push(`Manager ${yrs(n.ma, n.mb)}`);
+    lines.push(`${n.nb.length} connections`);
+    tip.innerHTML = ''; const b = document.createElement('b'); b.textContent = n.name; tip.appendChild(b);
+    lines.forEach(t => { const s = document.createElement('span'); s.textContent = t; tip.appendChild(document.createElement('br')); tip.appendChild(s); });
+    tip.hidden = false; tip.style.left = Math.min(W - tip.offsetWidth - 8, x + 14) + 'px'; tip.style.top = Math.min(H - tip.offsetHeight - 8, y + 14) + 'px'; }
+  cv.addEventListener('pointermove', ev => { const p = pick(ev); if (p.n !== hover) { hover = p.n; draw(); } showTip(p); cv.style.cursor = p.n ? 'pointer' : 'default'; });
+  cv.addEventListener('pointerleave', () => { hover = null; tip.hidden = true; draw(); });
+  cv.addEventListener('click', ev => { const p = pick(ev); focus = p.n && p.n !== focus ? p.n : null; draw(); markMgr(); });
+
+  function setYear(y) { year = y; document.getElementById('afYear').value = y; document.getElementById('afYearLabel').textContent = y; draw(); }
+  document.getElementById('afYear').addEventListener('input', e => { stop(); setYear(+e.target.value); });
+  const playBtn = document.getElementById('afPlay');
+  function stop() { clearInterval(timer); timer = null; playBtn.textContent = '▶ Play history'; }
+  playBtn.addEventListener('click', () => { if (timer) return stop(); playBtn.textContent = '❚❚ Pause'; if (year >= 2026) setYear(1896);
+    timer = setInterval(() => { if (year >= 2026) return stop(); setYear(Math.min(2026, year + 2)); }, 220); });
+  document.getElementById('afExit').addEventListener('click', () => { stop(); document.dispatchEvent(new CustomEvent('anfield-exit')); });
+
+  const mgrBox = document.getElementById('afManagers');
+  function markMgr() { mgrBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(!!focus && b.dataset.name === focus.name))); }
+  function build() {
+    if (built) return; built = true;
+    nodes.filter(n => n.ma).sort((a, b) => a.ma - b.ma).forEach(n => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'af-mgr'; b.dataset.name = n.name;
+      const nm = document.createElement('b'); nm.textContent = n.name; const em = document.createElement('em'); em.textContent = yrs(n.ma, n.mb);
+      b.append(nm, em); b.addEventListener('click', () => { focus = focus === n ? null : n; draw(); markMgr(); }); mgrBox.appendChild(b); });
+    const hg = document.getElementById('afHonours');
+    HONOURS.forEach(([v, k]) => { const d = document.createElement('div'); d.className = 'h'; const b = document.createElement('b'); b.textContent = v; const s = document.createElement('span'); s.textContent = k; d.append(b, s); hg.appendChild(d); });
+    const top = document.getElementById('afTop');
+    nodes.filter(n => n.rank).sort((a, b) => a.rank - b.rank).forEach(n => { const li = document.createElement('li');
+      li.innerHTML = '<span class="rk"></span><span class="nm"></span><span class="yrs"></span>';
+      li.children[0].textContent = n.rank; li.children[1].textContent = n.name; li.children[2].textContent = yrs(n.pa, n.pb); top.appendChild(li); });
+    new ResizeObserver(resize).observe(stage);
+  }
+  document.addEventListener('anfield', e => { if (e.detail) { build(); requestAnimationFrame(resize); } else { stop(); focus = hover = null; } });
+})();
+</script>
+
+</body>
+</html>
