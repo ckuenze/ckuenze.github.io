@@ -3,8 +3,10 @@
    Type: Libre Franklin (Franklin Gothic family, matching UVA print materials) + JetBrains Mono for data. */
 :root {
   --ink: #232d4b;        /* UVA Blue */
-  --accent: #e57200;     /* UVA Orange */
-  --cyan: #009fdf;
+  --accent: #00857c;     /* teal: main accent (text-safe on white) */
+  --spark: #f24736;      /* 2021-22 kit trim red-orange: rare highlight (logo dot, doctoral students, study status) */
+  --spark-ink: #c8352a;  /* same hue, deep enough for small text on white */
+  --cyan: #5272b4;
   --bg: #ffffff;
   --band: #f3f5f9;
   --line: #dde2ec;
@@ -16,9 +18,9 @@
   --max: 1120px;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ink: #c9d4f2; --accent: #ff8f2e; --cyan: #4cc3f5; --bg: #11172a; --band: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2; --card: #1a2340; color-scheme: dark }
+  :root:not([data-theme="light"]) { --ink: #c9d4f2; --accent: #3dd6c8; --spark: #f24736; --spark-ink: #ff7a6b; --cyan: #9fb3e8; --bg: #11172a; --band: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2; --card: #1a2340; color-scheme: dark }
 }
-:root[data-theme="dark"] { --ink: #c9d4f2; --accent: #ff8f2e; --cyan: #4cc3f5; --bg: #11172a; --band: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2; --card: #1a2340; color-scheme: dark }
+:root[data-theme="dark"] { --ink: #c9d4f2; --accent: #3dd6c8; --spark: #f24736; --spark-ink: #ff7a6b; --cyan: #9fb3e8; --bg: #11172a; --band: #171f36; --line: #2a3555; --fg: #e8ecf5; --muted: #9aa6c2; --card: #1a2340; color-scheme: dark }
 
 * { box-sizing: border-box }
 html { scroll-behavior: smooth }
@@ -42,7 +44,10 @@ p { margin: 0 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--bg) }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; flex-wrap: wrap }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 800; letter-spacing: -0.01em; font-size: 1.05rem }
-.brand i { width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 700 0.75rem var(--mono); font-style: normal }
+/* CK initials badge: white on navy in light mode, white on kit orange in dark mode */
+.brand i { width: 30px; height: 30px; border-radius: 8px; background: #232d4b; color: #ffffff; display: grid; place-items: center; font: 700 0.75rem var(--mono); font-style: normal }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand i { background: var(--spark) } }
+:root[data-theme="dark"] .brand i { background: var(--spark) }
 .nav { display: flex; gap: 4px; flex-wrap: wrap }
 .nav a { text-decoration: none; color: var(--muted); font-weight: 600; font-size: 0.92rem; padding: 6px 10px; border-radius: 8px }
 .nav a:hover { color: var(--ink); background: var(--band) }
@@ -94,7 +99,7 @@ section.band.alt { background: var(--band); border-block: 1px solid var(--line) 
 .facts-list ul.mini { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; list-style: disc }
 .facts-list ul.mini li { display: list-item; grid-template-columns: none }
 .facts-list ul.mini li::marker { color: var(--accent) }
-.tag.status { color: var(--accent) !important; background: color-mix(in srgb, var(--accent) 12%, var(--card)) !important }
+.tag.status { color: var(--spark-ink) !important; background: color-mix(in srgb, var(--spark) 12%, var(--card)) !important }
 .project .tag { justify-self: start; font: 600 0.7rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--band); padding: 4px 8px; border-radius: 6px }
 .project p { color: var(--muted); font-size: 0.97rem }
 .project a.more { font-weight: 700; font-size: 0.92rem }

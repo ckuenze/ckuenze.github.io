@@ -136,7 +136,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
       const S = Math.min(W, H) / 2 - 18, cx = W / 2, cy = H / 2, tt = reduce ? 0 : ms / 1000;
       const P = nodes.map(n => [cx + (n.x + 0.012 * Math.sin(tt * 0.6 + n.ph)) * S, cy + (n.y0 + 0.012 * Math.cos(tt * 0.5 + n.ph)) * S]);
-      const ink = css('--ink'), acc = css('--accent'), cyan = css('--cyan');
+      const ink = css('--ink'), acc = css('--accent'), cyan = css('--cyan'), spark = css('--spark') || acc;
       ctx.lineCap = 'round';
       for (const [a, b, w] of links) {
         ctx.globalAlpha = a === hub || b === hub ? 0.06 : Math.min(0.35, 0.06 + 0.04 * w); ctx.strokeStyle = ink; ctx.lineWidth = 0.4 + Math.sqrt(w) * 0.4;
@@ -150,8 +150,8 @@
       }
       nodes.forEach((n, i) => {
         const r = i === hub ? 9 : 1.6 + Math.sqrt(n.k) * 1.15;
-        ctx.globalAlpha = i === hub ? 1 : 0.9; ctx.fillStyle = i === hub ? ink : PHD.has(n.id) ? acc : n.role === 'trainee' ? acc : cyan;
-        if (PHD.has(n.id)) { ctx.beginPath(); ctx.arc(P[i][0], P[i][1], r + 2.5, 0, 7); ctx.strokeStyle = acc; ctx.lineWidth = 1; ctx.stroke(); }
+        ctx.globalAlpha = i === hub ? 1 : 0.9; ctx.fillStyle = i === hub ? ink : PHD.has(n.id) ? spark : n.role === 'trainee' ? acc : cyan;
+        if (PHD.has(n.id)) { ctx.beginPath(); ctx.arc(P[i][0], P[i][1], r + 2.5, 0, 7); ctx.strokeStyle = spark; ctx.lineWidth = 1; ctx.stroke(); }
         ctx.beginPath(); ctx.arc(P[i][0], P[i][1], r, 0, 7); ctx.fill();
       });
       ctx.globalAlpha = 1;
