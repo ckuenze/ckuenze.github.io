@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact · Christopher Kuenze</title>
+<meta name="description" content="Contact Christopher Kuenze about research collaboration, the ACL Dashboard, the SPRINT program, prospective doctoral study, or media requests.">
+<meta property="og:title" content="Contact · Christopher Kuenze">
+<meta property="og:description" content="Contact Christopher Kuenze about research collaboration, the ACL Dashboard, the SPRINT program, prospective doctoral study, or media requests.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chriskuenze.com/contact.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="">
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><i>CK</i>Chris Kuenze</a>
+    <nav class="nav" aria-label="Main">
+      <a href="research.html">Research</a>
+      <a href="studies.html">Studies</a>
+      <a href="publications.html">Publications</a>
+      <a href="teaching.html">Teaching</a>
+      <a href="media.html">Media</a>
+      <a href="mentoring.html">Mentoring</a>
+      <a href="contact.html" aria-current="page">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap" style="grid-template-columns:1fr">
+    <div>
+      <div class="eyebrow">Contact</div>
+      <h1 style="font-size:clamp(2rem,4.4vw,3rem)">Get in touch</h1>
+      <p class="lede">Send a note about collaboration, the ACL Dashboard, SPRINT, doctoral study, or a media request. I read every message.</p>
+    </div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap figure-row" style="align-items:start">
+    <form class="form" id="contactForm" action="https://formspree.io/f/FORMSPREE_ID" method="POST">
+      <div class="row2">
+        <label for="cname">Name<input id="cname" name="name" autocomplete="name" required></label>
+        <label for="cemail">Email<input id="cemail" name="email" type="email" autocomplete="email" required></label>
+      </div>
+      <label for="ctopic">Topic
+        <select id="ctopic" name="topic">
+          <option value="collaboration">Research collaboration</option>
+          <option value="student">Prospective doctoral student</option>
+          <option value="dashboard">ACL Dashboard</option>
+          <option value="sprint">SPRINT program</option>
+          <option value="mind">Mind in Motion study</option>
+          <option value="media">Media or speaking request</option>
+          <option value="other">Something else</option>
+        </select>
+      </label>
+      <label for="cmsg">Message<textarea id="cmsg" name="message" required></textarea></label>
+      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="muted" style="font-size:.85rem">Please don't include personal health information. I can't give medical advice by email.</p>
+      <button type="submit">Send message</button>
+      <p class="form-status" id="formStatus" aria-live="polite"></p>
+    </form>
+    <div class="project">
+      <span class="tag">Direct</span>
+      <ul class="facts-list">
+        <li><b>Email</b><span>ckuenze@virginia.edu</span></li>
+        <li><b>Office</b><span>Student Health and Wellness Center, Room 340A, 550 Brandon Avenue, Charlottesville, VA 22903</span></li>
+        <li><b>Lab</b><span><a href="https://education.virginia.edu/research-initiatives/research-centers-labs/research-labs/exercise-and-sport-injury-laboratory" rel="noopener">Exercise and Sport Injury Laboratory (EASIL)</a></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  const f = document.getElementById('contactForm'), s = document.getElementById('formStatus');
+  const t = new URLSearchParams(location.search).get('topic'); if (t) { const o = f.topic.querySelector(`option[value="${CSS.escape(t)}"]`); if (o) f.topic.value = t; }
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (f.action.includes('FORMSPREE_ID')) { s.textContent = 'The form is not connected yet. Please email ckuenze@virginia.edu.'; return; }
+    s.textContent = 'Sending…';
+    try {
+      const r = await fetch(f.action, { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } });
+      if (r.ok) { f.reset(); s.textContent = 'Thanks. Your message was sent.'; }
+      else s.textContent = 'Something went wrong. Please email ckuenze@virginia.edu instead.';
+    } catch { s.textContent = 'Could not send. Please email ckuenze@virginia.edu instead.'; }
+  });
+})();
+</script>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <h3>Contact</h3>
+      <p><a href="contact.html">Send a message</a><br>ckuenze@virginia.edu</p>
+      <p>Student Health and Wellness Center, Room 340A<br>550 Brandon Avenue, Charlottesville, VA 22903</p>
+    </div>
+    <div>
+      <h3>Research</h3>
+      <ul><li><a href="research.html#arrow">ARROW</a></li><li><a href="studies.html">Current studies</a></li><li><a href="https://acldashboard.com/" rel="noopener">ACL Dashboard</a></li><li><a href="teaching.html">Teaching tools</a></li><li><a href="media.html">Podcasts and media</a></li><li><a href="network/">Co-author network</a></li></ul>
+    </div>
+    <div>
+      <h3>Elsewhere</h3>
+      <ul><li><a href="https://education.virginia.edu/about/directory/chris-kuenze" rel="noopener">UVA faculty page</a></li><li><a href="https://education.virginia.edu/research-initiatives/research-centers-labs/research-labs/exercise-and-sport-injury-laboratory" rel="noopener">EASIL</a></li><li><a href="https://github.com/ckuenze" rel="noopener">GitHub</a></li><li><a href="https://scholar.google.com/citations?user=qaAtX5cAAAAJ" rel="noopener">Google Scholar</a></li><li><a href="https://orcid.org/0000-0001-9184-4636" rel="noopener">ORCID</a></li></ul>
+    </div>
+    <p class="fine">© <span data-year>2026</span> Christopher Kuenze. This is a personal website. Views expressed here are my own and do not represent the University of Virginia. <a class="ynwa" href="https://www.youtube.com/watch?v=YhqiSO_UFxg" rel="noopener">You'll Never Walk Alone</a></p>
+  </div>
+</footer>
+<script src="assets/site.js"></script>
+</body>
+</html>
