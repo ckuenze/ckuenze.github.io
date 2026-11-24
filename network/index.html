@@ -628,7 +628,7 @@ body.anfield .stat.phd b { color: #e0182f }
     if (on) {
       beforeAnfield = { h1: h1.textContent, sub: sub.textContent };
       h1.textContent = 'This is Anfield';
-      sub.textContent = "You'll Never Walk Alone. The club's 100 greatest players (2026 fan poll) and ten great managers, linked when their years at Liverpool overlapped.";
+      sub.textContent = "You'll Never Walk Alone. The club's 100 greatest players (2026 fan poll) and eleven great managers, linked when their years at Liverpool overlapped.";
     } else {
       h1.textContent = beforeAnfield.h1; sub.textContent = beforeAnfield.sub;
       document.querySelectorAll('header .stat span').forEach((s, i) => s.textContent = STAT_LABELS[i]);
@@ -760,7 +760,7 @@ body.anfield .stat.phd b { color: #e0182f }
 </script>
 
 <script>
-// ---- Anfield mode: Liverpool's 100 greatest players (2026 fan poll, liverpoolfc.com) and ten great managers ----
+// ---- Anfield mode: Liverpool's 100 greatest players (2026 fan poll, liverpoolfc.com) and eleven great managers ----
 // Linked when their years at the club overlapped (weight = overlapping seasons). Years are approximate.
 (function () {
   const RANKED = [
@@ -787,16 +787,16 @@ body.anfield .stat.phd b { color: #e0182f }
   ];
   const MANAGERS = [ // name, from, to (managerial spell); Paisley and Dalglish merge with their player nodes
     ['Tom Watson',1896,1915],['George Kay',1936,1951],['Bill Shankly',1959,1974],['Bob Paisley',1974,1983],['Joe Fagan',1983,1985],
-    ['Kenny Dalglish',1985,1991],['Gerard Houllier',1998,2004],['Rafael Benitez',2004,2010],['Jurgen Klopp',2015,2024],['Arne Slot',2024,2026],
+    ['Kenny Dalglish',1985,1991],['Gerard Houllier',1998,2004],['Rafael Benitez',2004,2010],['Jurgen Klopp',2015,2024],['Arne Slot',2024,2026],['Andoni Iraola',2026,2027,'current'],
   ];
   const HONOURS = [['20','League titles'],['6','European Cups'],['8','FA Cups'],['10','League Cups'],['3','UEFA Cups'],['4','UEFA Super Cups'],['1','Club World Cup'],['16','Charity / Community Shields']];
   const RED = '#ff4d5e', DEEP = '#c8102e', GREEN = '#00b2a9', WHITE = '#ffffff';
 
   const nodes = RANKED.map(([name, a, b], i) => ({ name, rank: i + 1, pa: a, pb: b, ma: null, mb: null }));
   const byName = new Map(nodes.map(n => [n.name, n]));
-  for (const [name, a, b] of MANAGERS) {
+  for (const [name, a, b, cur] of MANAGERS) {
     const n = byName.get(name);
-    if (n) { n.ma = a; n.mb = b; } else { const m = { name, rank: null, pa: null, pb: null, ma: a, mb: b }; nodes.push(m); byName.set(name, m); }
+    if (n) { n.ma = a; n.mb = b; n.mcur = !!cur; } else { const m = { name, rank: null, pa: null, pb: null, ma: a, mb: b, mcur: !!cur }; nodes.push(m); byName.set(name, m); }
   }
   nodes.forEach(n => { n.a = Math.min(...[n.pa, n.ma].filter(v => v != null)); n.b = Math.max(...[n.pb, n.mb].filter(v => v != null));
     n.kind = n.rank && n.ma ? 'both' : n.rank ? 'player' : 'manager'; });
@@ -863,10 +863,11 @@ body.anfield .stat.phd b { color: #e0182f }
   function pick(ev) { const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; let best = null, bd = 12;
     for (const n of nodes) { if (!vis(n)) continue; const d = Math.hypot(sx(n) - x, sy(n) - y) - rad(n); if (d < bd) { bd = d; best = n; } } return { n: best, x, y }; }
   const yrs = (a, b) => a == null ? '' : `${a}–${b >= 2026 ? 'present' : b}`;
+  const myrs = n => n.mcur ? `${n.ma}–present` : `${n.ma}–${n.mb}`;
   function showTip({ n, x, y }) { if (!n) { tip.hidden = true; return; }
     const lines = [];
     if (n.rank) lines.push(`No. ${n.rank} in the Top 100 · player ${yrs(n.pa, n.pb)}`);
-    if (n.ma) lines.push(`Manager ${yrs(n.ma, n.mb)}`);
+    if (n.ma) lines.push(`Manager ${myrs(n)}`);
     lines.push(`${n.nb.length} connections`);
     tip.innerHTML = ''; const b = document.createElement('b'); b.textContent = n.name; tip.appendChild(b);
     lines.forEach(t => { const s = document.createElement('span'); s.textContent = t; tip.appendChild(document.createElement('br')); tip.appendChild(s); });
@@ -889,7 +890,7 @@ body.anfield .stat.phd b { color: #e0182f }
     if (built) return; built = true;
     nodes.filter(n => n.ma).sort((a, b) => a.ma - b.ma).forEach(n => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'af-mgr'; b.dataset.name = n.name;
-      const nm = document.createElement('b'); nm.textContent = n.name; const em = document.createElement('em'); em.textContent = yrs(n.ma, n.mb);
+      const nm = document.createElement('b'); nm.textContent = n.name; const em = document.createElement('em'); em.textContent = myrs(n);
       b.append(nm, em); b.addEventListener('click', () => { focus = focus === n ? null : n; draw(); markMgr(); }); mgrBox.appendChild(b); });
     const hg = document.getElementById('afHonours');
     HONOURS.forEach(([v, k]) => { const d = document.createElement('div'); d.className = 'h'; const b = document.createElement('b'); b.textContent = v; const s = document.createElement('span'); s.textContent = k; d.append(b, s); hg.appendChild(d); });
