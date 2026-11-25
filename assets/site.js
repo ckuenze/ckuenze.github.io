@@ -126,6 +126,12 @@
       const r = Math.hypot(n.x, n.y0); n.ph = i * 1.7; if (!r) return;
       const rn = Math.pow(Math.min(1, r / r95), 0.55); n.x = n.x / r * rn; n.y0 = n.y0 / r * rn;
     });
+    // fit to the drawing's own footprint (the hub-centred layout is lopsided), and shape the frame to match
+    const xs = nodes.map(n => n.x), ys = nodes.map(n => n.y0);
+    const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2;
+    nodes.forEach(n => { n.x -= mx; n.y0 -= my; });
+    const hx = Math.max(...nodes.map(n => Math.abs(n.x))) || 1, hy = Math.max(...nodes.map(n => Math.abs(n.y0))) || 1;
+    const box = cv.parentElement; if (box) box.style.aspectRatio = String(Math.min(1.5, Math.max(1, hx / hy)));
     const PHD = new Set(raw.nodes.filter(n => n.role === 'phd').map(n => n.id));
     const ctx = cv.getContext('2d'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const pulses = [];
@@ -134,7 +140,7 @@
       const W = cv.clientWidth, H = cv.clientHeight, dpr = window.devicePixelRatio || 1;
       if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-      const S = Math.min(W, H) / 2 - 18, cx = W / 2, cy = H / 2, tt = reduce ? 0 : ms / 1000;
+      const S = Math.min((W / 2 - 14) / hx, (H / 2 - 14) / hy), cx = W / 2, cy = H / 2, tt = reduce ? 0 : ms / 1000;
       const P = nodes.map(n => [cx + (n.x + 0.012 * Math.sin(tt * 0.6 + n.ph)) * S, cy + (n.y0 + 0.012 * Math.cos(tt * 0.5 + n.ph)) * S]);
       const ink = css('--ink'), acc = css('--accent'), cyan = css('--cyan'), spark = css('--spark') || acc;
       ctx.lineCap = 'round';
@@ -195,7 +201,7 @@
       .attr('tabindex', 0).attr('role', 'img').attr('aria-label', s => `${s.name}, ${s.city}`);
     dots.append('circle').attr('class', 'halo').attr('r', 15);
     dots.append('circle').attr('class', 'core').attr('r', s => s.lead ? 9 : 7);
-    sites.forEach((s, i) => { const li = document.createElement('li'); li.dataset.i = i;
+    sites.forEach((s, i) => { const li = document.createElement('li'); li.dataset.i = i; if (s.lead) li.classList.add('lead');
       const b = document.createElement('b'); b.textContent = s.name; const sp = document.createElement('span'); sp.textContent = s.city + (s.lead ? ' · coordinating site' : '');
       li.append(b, sp);
       if (s.pis && s.pis.length) { const pi = document.createElement('span'); pi.className = 'pi'; pi.append((s.pis.length > 1 ? 'Site PIs' : 'Site PI') + ': ');
