@@ -50,10 +50,7 @@
 </section>
 <section class="band">
   <div class="wrap figure-row" style="align-items:start">
-    <form class="form" id="contactForm" action="https://formsubmit.co/ckuenze@virginia.edu" method="POST">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_next" value="https://chriskuenze.com/contact.html?sent=1">
+    <form class="form" id="contactForm" action="https://chriskuenze-contact.cmk7sq.workers.dev/" method="POST">
       <div class="row2">
         <label for="cname">Name<input id="cname" name="name" autocomplete="name" required></label>
         <label for="cemail">Email<input id="cemail" name="email" type="email" autocomplete="email" required></label>
@@ -89,20 +86,20 @@
 (function () {
   const f = document.getElementById('contactForm'), s = document.getElementById('formStatus');
   const t = new URLSearchParams(location.search).get('topic'); if (t) { const o = f.topic.querySelector(`option[value="${CSS.escape(t)}"]`); if (o) f.topic.value = t; }
-  if (new URLSearchParams(location.search).get('sent')) s.textContent = 'Thanks. Your message was sent.';
-  // Sends through FormSubmit (formsubmit.co) to Chris's UVA email; falls back to a normal form post without JavaScript.
+  // Sends to Chris's UVA email through the Cloudflare Worker "chriskuenze-contact" (source: tools/website/contact-worker.js).
   f.addEventListener('submit', async e => {
     e.preventDefault();
-    if (f._honey.value) return;
+    const btn = f.querySelector('button[type="submit"]');
     const data = Object.fromEntries(new FormData(f));
-    data._subject = 'chriskuenze.com: ' + f.topic.options[f.topic.selectedIndex].text;
-    data._replyto = data.email;
-    s.textContent = 'Sending…';
+    data.topic_label = f.topic.options[f.topic.selectedIndex].text;
+    s.textContent = 'Sending…'; btn.disabled = true;
     try {
-      const r = await fetch(f.action.replace('formsubmit.co/', 'formsubmit.co/ajax/'), { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
-      if (r.ok) { f.reset(); s.textContent = 'Thanks. Your message was sent.'; }
-      else s.textContent = 'Something went wrong. Please email ckuenze@virginia.edu instead.';
+      const r = await fetch(f.action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.success === true) { f.reset(); s.textContent = 'Thanks. Your message was sent.'; }
+      else s.textContent = (j.message && r.status === 400 ? j.message + ' ' : '') + (r.status === 400 ? '' : 'Your message could not be delivered right now. Please email ckuenze@virginia.edu instead.');
     } catch { s.textContent = 'Could not send. Please email ckuenze@virginia.edu instead.'; }
+    btn.disabled = false;
   });
 })();
 </script>
