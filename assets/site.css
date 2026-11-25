@@ -146,6 +146,33 @@ section.band.alt { background: var(--band); border-block: 1px solid var(--line) 
 .profile-links a:hover { border-color: var(--accent); color: var(--accent) }
 .profile-links i { min-width: 26px; height: 26px; padding: 0 6px; border-radius: 999px; background: var(--band); display: grid; place-items: center; font: 700 0.66rem var(--mono); font-style: normal; color: var(--ink) }
 
+/* stat boxes (Publications page), matching the co-author network header */
+.stat-boxes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 22px; max-width: 760px }
+@media (max-width: 560px) { .stat-boxes { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+.stat-boxes > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0 }
+.stat-boxes b { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.05 }
+.stat-boxes span { font: 500 0.7rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted) }
+
+/* ARROW site map */
+.map-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start }
+@media (max-width: 860px) { .map-row { grid-template-columns: 1fr } }
+.map-fig { position: relative; margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; min-width: 0 }
+.map-fig svg { width: 100%; height: auto; display: block }
+.map-land { fill: var(--band); stroke: none }
+.map-borders { fill: none; stroke: var(--line); stroke-width: 1 }
+.site-dot { cursor: pointer; outline: none }
+.site-dot .core { fill: var(--accent); stroke: var(--card); stroke-width: 2.5 }
+.site-dot .halo { fill: var(--accent); opacity: 0; transition: opacity .15s }
+.site-dot.lead .core, .site-dot.lead .halo { fill: var(--spark) }
+.site-dot.active .halo, .site-dot:focus .halo { opacity: .22 }
+.map-tip { position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: .82rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0,0,0,.12); max-width: 260px; display: grid }
+.map-tip span { color: var(--muted); font-size: .76rem }
+.site-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: .88rem }
+.site-list li { display: grid; gap: 1px; padding: 6px 10px; border-radius: 8px; border-left: 3px solid transparent }
+.site-list li b { color: var(--ink); font-weight: 600 }
+.site-list li span { color: var(--muted); font-size: .78rem }
+.site-list li.active { background: var(--band); border-left-color: var(--accent) }
+
 /* contact form */
 .form { display: grid; gap: 14px; max-width: 640px }
 .form label { display: grid; gap: 6px; font-weight: 600; font-size: 0.92rem; color: var(--ink) }

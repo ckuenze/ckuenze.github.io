@@ -178,6 +178,45 @@
     }).join('');
   });
 
+  // ARROW site map (Research page): US states from us-atlas (pre-projected Albers), sites from data/arrow-sites.json
+  const amap = $('#arrowMap');
+  if (amap && window.d3 && window.topojson) Promise.all([
+    fetch('https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-albers-10m.json').then(r => r.json()),
+    fetch(root + 'data/arrow-sites.json').then(r => r.json())
+  ]).then(([us, d]) => {
+    const svg = d3.select(amap), path = d3.geoPath(), proj = d3.geoAlbersUsa().scale(1300).translate([487.5, 305]);
+    svg.append('path').attr('class', 'map-land').attr('d', path(topojson.feature(us, us.objects.nation)));
+    svg.append('path').attr('class', 'map-borders').attr('d', path(topojson.mesh(us, us.objects.states, (a, b) => a !== b)));
+    const list = $('#siteList'), tip = $('#mapTip');
+    const sites = d.sites.map(s => { const p = proj([s.lon, s.lat]); return { ...s, x: p[0] + (s.dx || 0), y: p[1] + (s.dy || 0) }; })
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const g = svg.append('g');
+    const dots = g.selectAll('g').data(sites).join('g').attr('class', s => 'site-dot' + (s.lead ? ' lead' : '')).attr('transform', s => `translate(${s.x},${s.y})`)
+      .attr('tabindex', 0).attr('role', 'img').attr('aria-label', s => `${s.name}, ${s.city}`);
+    dots.append('circle').attr('class', 'halo').attr('r', 15);
+    dots.append('circle').attr('class', 'core').attr('r', s => s.lead ? 9 : 7);
+    sites.forEach((s, i) => { const li = document.createElement('li'); li.dataset.i = i;
+      const b = document.createElement('b'); b.textContent = s.name; const sp = document.createElement('span'); sp.textContent = s.city + (s.lead ? ' · coordinating site' : '');
+      li.append(b, sp); list.appendChild(li); });
+    const fig = amap.parentElement;
+    const on = (i, show) => {
+      dots.classed('active', (s, j) => show && j === i);
+      list.querySelectorAll('li').forEach((li, j) => li.classList.toggle('active', show && j === i));
+      if (!show) { tip.hidden = true; return; }
+      const s = sites[i], r = amap.getBoundingClientRect(), k = r.width / 975;
+      tip.textContent = ''; const b = document.createElement('b'); b.textContent = s.name; const sp = document.createElement('span'); sp.textContent = s.city;
+      tip.append(b, sp); tip.hidden = false;
+      tip.style.left = Math.min(r.width - tip.offsetWidth - 6, Math.max(6, s.x * k + 12)) + 'px'; tip.style.top = Math.max(6, s.y * k - tip.offsetHeight - 10) + 'px';
+    };
+    dots.on('mouseenter focus', (e, s) => on(sites.indexOf(s), true)).on('mouseleave blur', () => on(0, false));
+    list.querySelectorAll('li').forEach((li, i) => { li.addEventListener('mouseenter', () => on(i, true)); li.addEventListener('mouseleave', () => on(i, false)); });
+  }).catch(() => { amap.closest('.arrow-map')?.setAttribute('hidden', ''); });
+
+  // "Last updated" = the month the site data was last rebuilt from the CV
+  const upd = document.querySelectorAll('[data-updated]');
+  if (upd.length) getPubs().then(d => { const b = d.meta && d.meta.built; if (!b) return;
+    const t = new Date(b + 'T12:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); upd.forEach(el => el.textContent = t); }).catch(() => {});
+
   // footer year
   document.querySelectorAll('[data-year]').forEach(el => el.textContent = new Date().getFullYear());
 })();
