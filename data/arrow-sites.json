@@ -1,0 +1,20 @@
+{
+  "_note": "ARROW member sites, confirmed by Chris 2026-11-25 (names only, no logos, no patient counts). lat/lon are approximate campus locations; dx/dy nudge overlapping dots in the same city.",
+  "sites": [
+    { "name": "Arkansas Children's Hospital", "city": "Little Rock, AR", "lat": 34.7465, "lon": -92.2896 },
+    { "name": "Children's Health Andrews Institute for Orthopaedics & Sports Medicine", "city": "Plano, TX", "lat": 33.0763, "lon": -96.8231 },
+    { "name": "Children's Hospital of Philadelphia", "city": "Philadelphia, PA", "lat": 39.9481, "lon": -75.1938 },
+    { "name": "Children's Nebraska", "city": "Omaha, NE", "lat": 41.2627, "lon": -96.0397, "dx": -7 },
+    { "name": "Connecticut Children's", "city": "Hartford, CT", "lat": 41.7542, "lon": -72.6797 },
+    { "name": "Creighton University", "city": "Omaha, NE", "lat": 41.2655, "lon": -95.9468, "dx": 7 },
+    { "name": "Florida International University", "city": "Miami, FL", "lat": 25.7574, "lon": -80.3733, "dx": -7 },
+    { "name": "Inova Health System", "city": "Fairfax, VA", "lat": 38.8574, "lon": -77.2278 },
+    { "name": "Michigan State University", "city": "East Lansing, MI", "lat": 42.7018, "lon": -84.4822 },
+    { "name": "Nicklaus Children's Hospital", "city": "Miami, FL", "lat": 25.7417, "lon": -80.2937, "dx": 7 },
+    { "name": "Scottish Rite for Children", "city": "Dallas, TX", "lat": 32.8085, "lon": -96.8371, "dy": 7 },
+    { "name": "Seattle Children's Hospital", "city": "Seattle, WA", "lat": 47.6625, "lon": -122.2817 },
+    { "name": "University of Missouri", "city": "Columbia, MO", "lat": 38.9404, "lon": -92.3277 },
+    { "name": "University of North Carolina at Chapel Hill", "city": "Chapel Hill, NC", "lat": 35.9049, "lon": -79.0469 },
+    { "name": "University of Virginia", "city": "Charlottesville, VA", "lat": 38.0336, "lon": -78.508, "lead": true }
+  ]
+}
