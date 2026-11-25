@@ -9,6 +9,13 @@
 <meta property="og:description" content="Contact Christopher Kuenze about research collaboration, the ACL Dashboard, the SPRINT program, prospective doctoral study, or media requests.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://chriskuenze.com/contact.html">
+<meta property="og:site_name" content="Christopher Kuenze">
+<meta property="og:image" content="https://chriskuenze.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Christopher Kuenze, PhD, ATC, FNATA. Recovery after ACL reconstruction.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://chriskuenze.com/contact.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
@@ -42,7 +49,10 @@
 </section>
 <section class="band">
   <div class="wrap figure-row" style="align-items:start">
-    <form class="form" id="contactForm" action="https://formspree.io/f/FORMSPREE_ID" method="POST">
+    <form class="form" id="contactForm" action="https://formsubmit.co/ckuenze@virginia.edu" method="POST">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://chriskuenze.com/contact.html?sent=1">
       <div class="row2">
         <label for="cname">Name<input id="cname" name="name" autocomplete="name" required></label>
         <label for="cemail">Email<input id="cemail" name="email" type="email" autocomplete="email" required></label>
@@ -59,7 +69,7 @@
         </select>
       </label>
       <label for="cmsg">Message<textarea id="cmsg" name="message" required></textarea></label>
-      <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
       <p class="muted" style="font-size:.85rem">Please don't include personal health information. I can't give medical advice by email.</p>
       <button type="submit">Send message</button>
       <p class="form-status" id="formStatus" aria-live="polite"></p>
@@ -78,12 +88,17 @@
 (function () {
   const f = document.getElementById('contactForm'), s = document.getElementById('formStatus');
   const t = new URLSearchParams(location.search).get('topic'); if (t) { const o = f.topic.querySelector(`option[value="${CSS.escape(t)}"]`); if (o) f.topic.value = t; }
+  if (new URLSearchParams(location.search).get('sent')) s.textContent = 'Thanks. Your message was sent.';
+  // Sends through FormSubmit (formsubmit.co) to Chris's UVA email; falls back to a normal form post without JavaScript.
   f.addEventListener('submit', async e => {
     e.preventDefault();
-    if (f.action.includes('FORMSPREE_ID')) { s.textContent = 'The form is not connected yet. Please email ckuenze@virginia.edu.'; return; }
+    if (f._honey.value) return;
+    const data = Object.fromEntries(new FormData(f));
+    data._subject = 'chriskuenze.com: ' + f.topic.options[f.topic.selectedIndex].text;
+    data._replyto = data.email;
     s.textContent = 'Sending…';
     try {
-      const r = await fetch(f.action, { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } });
+      const r = await fetch(f.action.replace('formsubmit.co/', 'formsubmit.co/ajax/'), { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
       if (r.ok) { f.reset(); s.textContent = 'Thanks. Your message was sent.'; }
       else s.textContent = 'Something went wrong. Please email ckuenze@virginia.edu instead.';
     } catch { s.textContent = 'Could not send. Please email ckuenze@virginia.edu instead.'; }
@@ -96,7 +111,7 @@
   <div class="wrap">
     <div>
       <h3>Contact</h3>
-      <p><a href="contact.html">Send a message</a><br>ckuenze@virginia.edu</p>
+      <p><a href="contact.html">Send a message</a><br>ckuenze@virginia.edu<br><a href="assets/cv/Kuenze-CV.pdf">Curriculum vitae (PDF)</a></p>
       <p>Student Health and Wellness Center, Room 340A<br>550 Brandon Avenue, Charlottesville, VA 22903</p>
     </div>
     <div>
@@ -107,7 +122,7 @@
       <h3>Elsewhere</h3>
       <ul><li><a href="https://education.virginia.edu/about/directory/chris-kuenze" rel="noopener">UVA faculty page</a></li><li><a href="https://education.virginia.edu/research-initiatives/research-centers-labs/research-labs/exercise-and-sport-injury-laboratory" rel="noopener">EASIL</a></li><li><a href="https://github.com/ckuenze" rel="noopener">GitHub</a></li><li><a href="https://scholar.google.com/citations?user=qaAtX5cAAAAJ" rel="noopener">Google Scholar</a></li><li><a href="https://orcid.org/0000-0001-9184-4636" rel="noopener">ORCID</a></li></ul>
     </div>
-    <p class="fine">© <span data-year>2026</span> Christopher Kuenze. This is a personal website. Views expressed here are my own and do not represent the University of Virginia. <a class="ynwa" href="https://www.youtube.com/watch?v=YhqiSO_UFxg" rel="noopener">You'll Never Walk Alone</a></p>
+    <p class="fine">© <span data-year>2026</span> Christopher Kuenze. This is a personal website. Views expressed here are my own and do not represent the University of Virginia. Last updated <span data-updated>November 2026</span>. <a class="ynwa" href="https://www.youtube.com/watch?v=YhqiSO_UFxg" rel="noopener">You'll Never Walk Alone</a></p>
   </div>
 </footer>
 <script src="assets/site.js"></script>
