@@ -172,6 +172,11 @@ section.band.alt { background: var(--band); border-block: 1px solid var(--line) 
 .site-list li b { color: var(--ink); font-weight: 600 }
 .site-list li span { color: var(--muted); font-size: .78rem }
 .site-list li.active { background: var(--band); border-left-color: var(--accent) }
+.map-tip .pi { color: var(--ink); margin-top: 3px; overflow-wrap: anywhere }
+.map-tip .hint { font-size: .7rem; color: var(--accent); margin-top: 2px }
+.site-list li .pi { color: var(--ink); font-size: .8rem }
+.site-list li .pi a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor }
+.site-list li .pi a:hover, .site-list li .pi a:focus-visible { border-bottom-style: solid }
 
 /* contact form */
 .form { display: grid; gap: 14px; max-width: 640px }

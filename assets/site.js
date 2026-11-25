@@ -197,7 +197,13 @@
     dots.append('circle').attr('class', 'core').attr('r', s => s.lead ? 9 : 7);
     sites.forEach((s, i) => { const li = document.createElement('li'); li.dataset.i = i;
       const b = document.createElement('b'); b.textContent = s.name; const sp = document.createElement('span'); sp.textContent = s.city + (s.lead ? ' · coordinating site' : '');
-      li.append(b, sp); list.appendChild(li); });
+      li.append(b, sp);
+      if (s.pis && s.pis.length) { const pi = document.createElement('span'); pi.className = 'pi'; pi.append((s.pis.length > 1 ? 'Site PIs' : 'Site PI') + ': ');
+        s.pis.forEach((p, k) => { if (k) pi.append(' and ');
+          if (p.url) { const a = document.createElement('a'); a.href = p.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = p.name; a.title = p.name + ' (profile)'; pi.append(a); }
+          else pi.append(p.name); });
+        li.append(pi); }
+      list.appendChild(li); });
     const fig = amap.parentElement;
     const on = (i, show) => {
       dots.classed('active', (s, j) => show && j === i);
@@ -205,10 +211,18 @@
       if (!show) { tip.hidden = true; return; }
       const s = sites[i], r = amap.getBoundingClientRect(), k = r.width / 975;
       tip.textContent = ''; const b = document.createElement('b'); b.textContent = s.name; const sp = document.createElement('span'); sp.textContent = s.city;
-      tip.append(b, sp); tip.hidden = false;
+      tip.append(b, sp);
+      if (s.pis && s.pis.length) { const e = document.createElement('span'); e.className = 'pi';
+        e.textContent = (s.pis.length > 1 ? 'Site PIs: ' : 'Site PI: ') + s.pis.map(p => p.name).join(' and '); tip.append(e);
+        if (s.pis.some(p => p.url)) { const h = document.createElement('span'); h.className = 'hint'; h.textContent = s.pis.length > 1 ? 'Click for profiles' : 'Click for profile'; tip.append(h); } }
+      tip.hidden = false;
       tip.style.left = Math.min(r.width - tip.offsetWidth - 6, Math.max(6, s.x * k + 12)) + 'px'; tip.style.top = Math.max(6, s.y * k - tip.offsetHeight - 10) + 'px';
     };
-    dots.on('mouseenter focus', (e, s) => on(sites.indexOf(s), true)).on('mouseleave blur', () => on(0, false));
+    dots.on('mouseenter focus', (e, s) => on(sites.indexOf(s), true)).on('mouseleave blur', () => on(0, false))
+      .on('click keydown', (e, s) => { if (e.type === 'keydown' && e.key !== 'Enter') return;
+        const linked = (s.pis || []).filter(p => p.url); if (linked.length === 1 && s.pis.length === 1) { window.open(linked[0].url, '_blank', 'noopener'); return; }
+        const li = list.children[sites.indexOf(s)]; li.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); li.querySelector('a')?.focus({ preventScroll: true }); })
+      .style('cursor', 'pointer');
     list.querySelectorAll('li').forEach((li, i) => { li.addEventListener('mouseenter', () => on(i, true)); li.addEventListener('mouseleave', () => on(i, false)); });
   }).catch(() => { amap.closest('.arrow-map')?.setAttribute('hidden', ''); });
 
